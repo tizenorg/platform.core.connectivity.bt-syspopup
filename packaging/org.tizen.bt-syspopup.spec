@@ -5,6 +5,7 @@ Release:    2
 Group:      TO_BE_FILLED
 License:    Apache-2.0
 Source0:    %{name}-%{version}.tar.gz
+Source1001: packaging/org.tizen.bt-syspopup.manifest 
 BuildRequires:  pkgconfig(evas)
 BuildRequires:  pkgconfig(ecore-input)
 BuildRequires:  pkgconfig(ethumb)
@@ -31,6 +32,7 @@ bluetooth system-popup application (bluetooth system popup).
 
 
 %build
+cp %{SOURCE1001} .
 
 cmake . -DCMAKE_INSTALL_PREFIX=/usr
 make %{?jobs:-j%jobs}
@@ -41,6 +43,7 @@ rm -rf %{buildroot}
 
 
 %files
+%manifest org.tizen.bt-syspopup.manifest
 %defattr(-,root,root,-)
 /opt/share/applications/org.tizen.bt-syspopup.desktop
 /usr/bin/bt-syspopup
