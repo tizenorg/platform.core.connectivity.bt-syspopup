@@ -1,0 +1,9 @@
+Name=Bluetooth System Popup
+Type=Application
+Exec=/usr/bin/bt-syspopup
+Nodisplay=True
+Icon=org.tizen.bt-syspopup.png
+Network=False
+Comment=Bluetooth System Popup (Pairing / Connection Confirmation)
+X-TIZEN-TaskManage=false
+X-TIZEN-Removable=false

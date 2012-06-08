@@ -1,0 +1,8 @@
+bt-syspopup (0.2.37-2) unstable; urgency=low
+
+  * Release Tizen 1.0
+  * Git: slp/pkgs/b/bt-syspopup
+  * Tag: bt-syspopup_0.2.37-2
+
+ -- DoHyun Pyun <dh79.pyun@samsung.com>  Thu, 22 Mar 2012 13:19:38 +0900
+
