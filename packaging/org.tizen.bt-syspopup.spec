@@ -3,7 +3,7 @@ Summary:    bluetooth system-popup application (bluetooth system popup)
 Version:    0.2.37
 Release:    2
 Group:      TO_BE_FILLED
-License:    Apache-2.0
+License:    Flora Software License
 Source0:    %{name}-%{version}.tar.gz
 Source1001: packaging/org.tizen.bt-syspopup.manifest 
 BuildRequires:  pkgconfig(evas)
