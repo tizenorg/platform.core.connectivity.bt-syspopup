@@ -1,5 +1,3 @@
-
-
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 PROJECT(bt-syspopup C)
 
@@ -32,7 +30,8 @@ pkg_check_modules(pkgs REQUIRED
 	gobject-2.0
 	pmapi
 	syspopup
-	utilX)
+	utilX
+	aul)
 
 FOREACH(flag ${pkgs_CFLAGS})
 	SET(EXTRA_CFLAGS "${EXTRA_CFLAGS} ${flag} -Wall -g")
@@ -60,17 +59,13 @@ SET(CMAKE_EXE_LINKER_FLAGS "-Wl,--as-needed")
 ADD_EXECUTABLE(${PROJECT_NAME} ${SRCS})
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} ${pkgs_LDFLAGS})
 
-INSTALL(TARGETS ${PROJECT_NAME} DESTINATION bin)
+INSTALL(TARGETS ${PROJECT_NAME} DESTINATION /opt/apps/org.tizen.bt-syspopup/bin)
 
 # install desktop file & icon
 SET(PREFIX ${CMAKE_INSTALL_PREFIX})
-CONFIGURE_FILE(data/org.tizen.bt-syspopup.desktop.in data/org.tizen.bt-syspopup.desktop)
-INSTALL(FILES ${CMAKE_BINARY_DIR}/data/org.tizen.bt-syspopup.desktop DESTINATION /opt/share/applications/)
-
-INSTALL(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data/images/ DESTINATION
-${PREFIX}/share/icon FILES_MATCHING PATTERN "*.png")
-
+INSTALL(FILES ${CMAKE_BINARY_DIR}/data/org.tizen.bt-syspopup.xml DESTINATION /usr/share/packages/)
+INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/data/org.tizen.bt-syspopup.png DESTINATION /opt/share/icons/default/small)
 
 # install ini file
-INSTALL(FILES ${CMAKE_SOURCE_DIR}/data/${PROJECT_NAME}.ini DESTINATION share/process-info)
+INSTALL(FILES ${CMAKE_SOURCE_DIR}/data/${PROJECT_NAME}.ini DESTINATION /opt/share/process-info)
 

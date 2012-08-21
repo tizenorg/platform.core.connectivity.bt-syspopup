@@ -22,23 +22,24 @@
 #include <glib.h>
 #include <dbus/dbus-glib.h>
 
+#ifndef PACKAGE_NAME
+#define PACKAGE_NAME "org.tizen.bt-syspopup"
+#endif
+
 #ifndef PREFIX
-#define PREFIX "/usr"
+#define PREFIX "/opt/apps"PACKAGE_NAME
 #endif
 
 #define TEMP_DIR	"/tmp"
+
 #define PACKAGE		"bt-syspopup"
 #define APPNAME		"bt-syspopup"
-#define LOCALEDIR	PREFIX"/share/locale"
-#define ICON_DIR	PREFIX"/share/icon"
+#define ICON_DIR	PREFIX"/res/default/small/icon"
 
 #define BT_COMMON_PKG		"ug-setting-bluetooth-efl"
 #define BT_COMMON_RES		"/opt/ug/res/locale"
 
 #define _EDJ(obj) elm_layout_edje_get(obj)
-
-#define BT_POPUP_ICON_CANCEL ICON_DIR"/01_header_icon_cancel.png"
-#define BT_POPUP_ICON_DONE ICON_DIR"/01_header_icon_done.png"
 
 #define BT_AUTHENTICATION_TIMEOUT		35
 #define BT_AUTHORIZATION_TIMEOUT		15
@@ -84,19 +85,30 @@
 #define BT_STR_OVERWRITE_FILE_Q \
 	dgettext(BT_COMMON_PKG, "IDS_BT_POP_PS_ALREADY_EXISTS_OVERWRITE_Q")
 
-/* We will add these strings in BT_COMMON_PKG to translate */
-#define BT_STR_DISABLED_RESTRICTS \
-	"Security policy restricts use of Bluletooth connection"
+#define BT_STR_ENTER_PS_ON_PS_TO_PAIR \
+	dgettext(BT_COMMON_PKG, "IDS_BT_BODY_ENTER_P1SS_ON_P2SS_TO_PAIR_THEN_TAP_RETURN_OR_ENTER")
 
-#define BT_STR_HANDS_FREE_RESTRICTS \
-	"Security policy restricts use of Bluletooth connection to hands-free features only"
+#define BT_STR_EXCHANGE_OBJECT_WITH_PS_Q \
+	dgettext(BT_COMMON_PKG, "IDS_BT_POP_EXCHANGEOBJECT")
+
+/* Need to convert the design ID */
+#define BT_STR_BLUETOOTH_PAIRING_REQUEST \
+	dgettext(BT_COMMON_PKG, "IDS_BT_HEADER_BLUETOOTH_PAIRING_REQUEST")
+
+#define BT_STR_ENTER_PIN_TO_PAIR \
+	dgettext(BT_COMMON_PKG, "IDS_BT_POP_ENTER_PIN_TO_PAIR_WITH_PS_HTRY_0000_OR_1234")
+
+#define BT_STR_SHOW_PASSWORD \
+	dgettext(BT_COMMON_PKG, "IDS_BT_BODY_SHOW_PASSWORD")
+
+#define BT_STR_CONFIRM_PASSKEY_PS_TO_PAIR_WITH_PS \
+	dgettext(BT_COMMON_PKG, "IDS_BT_POP_CONFIRM_PASSKEY_IS_P2SS_TO_PAIR_WITH_P1SS")
 
 #define BT_STR_OK dgettext("sys_string", "IDS_COM_SK_OK")
 #define BT_STR_YES dgettext("sys_string", "IDS_COM_SK_YES")
 #define BT_STR_NO dgettext("sys_string", "IDS_COM_SK_NO")
 #define BT_STR_DONE dgettext("sys_string", "IDS_COM_SK_DONE")
 #define BT_STR_CANCEL dgettext("sys_string", "IDS_COM_SK_CANCEL")
-
 
 typedef enum {
 	BT_CHANGED_MODE_ENABLE,
@@ -116,6 +128,7 @@ typedef enum {
 	BT_EVENT_KEYBOARD_PASSKEY_REQUEST = 0x0200,
 	BT_EVENT_INFORMATION = 0x0400,
 	BT_EVENT_TERMINATE = 0x0800,
+	BT_EVENT_EXCHANGE_REQUEST = 0x1000,
 } bt_popup_event_type_t;
 
 typedef enum {
@@ -128,12 +141,11 @@ typedef enum {
 struct bt_popup_appdata {
 	Evas *evas;
 	Evas_Object *win_main;
-	Evas_Object *layout_main;
 	Evas_Object *popup;
 
 	/* Passkey layout objects */
-	Evas_Object *navi_fr;
 	Evas_Object *entry;
+	Evas_Object *editfield;
 	Evas_Object *edit_field_save_btn;
 	Evas_Object *ticker_noti;
 
@@ -143,11 +155,6 @@ struct bt_popup_appdata {
 	DBusGProxy *agent_proxy;
 	DBusGProxy *obex_proxy;
 	E_DBus_Connection *EDBusHandle;
-
-	Elm_Genlist_Item_Class sp_itc;
-	Elm_Genlist_Item_Class itc;
-
-	char passkey[BT_PK_MLEN + 1];
 
 	int changed_mode;
 	bt_popup_event_type_t event_type;

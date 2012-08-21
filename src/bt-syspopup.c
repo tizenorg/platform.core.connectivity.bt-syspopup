@@ -23,6 +23,7 @@
 #include <vconf-keys.h>
 #include <syspopup.h>
 #include <E_DBus.h>
+#include <aul.h>
 
 #include "bt-syspopup.h"
 
@@ -55,28 +56,62 @@ static void __bluetooth_cleanup(struct bt_popup_appdata *ad)
 	if (ad->popup)
 		evas_object_del(ad->popup);
 
-	if (ad->layout_main)
-		evas_object_del(ad->layout_main);
-
 	if (ad->win_main)
 		evas_object_del(ad->win_main);
 
 	ad->popup = NULL;
-	ad->layout_main = NULL;
 	ad->win_main = NULL;
+}
+
+static void __bluetooth_parse_event(struct bt_popup_appdata *ad, const char *event_type)
+{
+	if (!strcasecmp(event_type, "pin-request"))
+		ad->event_type = BT_EVENT_PIN_REQUEST;
+	else if (!strcasecmp(event_type, "passkey-confirm-request"))
+		ad->event_type = BT_EVENT_PASSKEY_CONFIRM_REQUEST;
+	else if (!strcasecmp(event_type, "passkey-request"))
+		ad->event_type = BT_EVENT_PASSKEY_REQUEST;
+	else if (!strcasecmp(event_type, "authorize-request"))
+		ad->event_type = BT_EVENT_AUTHORIZE_REQUEST;
+	else if (!strcasecmp(event_type, "app-confirm-request"))
+		ad->event_type = BT_EVENT_APP_CONFIRM_REQUEST;
+	else if (!strcasecmp(event_type, "push-authorize-request"))
+		ad->event_type = BT_EVENT_PUSH_AUTHORIZE_REQUEST;
+	else if (!strcasecmp(event_type, "confirm-overwrite-request"))
+		ad->event_type = BT_EVENT_CONFIRM_OVERWRITE_REQUEST;
+	else if (!strcasecmp(event_type, "keyboard-passkey-request"))
+		ad->event_type = BT_EVENT_KEYBOARD_PASSKEY_REQUEST;
+	else if (!strcasecmp(event_type, "bt-information"))
+		ad->event_type = BT_EVENT_INFORMATION;
+	else if (!strcasecmp(event_type, "exchange-request"))
+		ad->event_type = BT_EVENT_EXCHANGE_REQUEST;
+	else
+		ad->event_type = 0x0000;
+		return;
+}
+
+static void __bluetooth_request_to_cancel(void)
+{
+	/* To be implement it */
 }
 
 static void __bluetooth_remove_all_event(struct bt_popup_appdata *ad)
 {
 	switch (ad->event_type) {
 	case BT_EVENT_PIN_REQUEST:
-	case BT_EVENT_KEYBOARD_PASSKEY_REQUEST:
 
 		dbus_g_proxy_call_no_reply(ad->agent_proxy,
 					   "ReplyPinCode",
 					   G_TYPE_UINT, BT_AGENT_CANCEL,
 					   G_TYPE_STRING, "", G_TYPE_INVALID,
 					   G_TYPE_INVALID);
+
+		break;
+
+
+	case BT_EVENT_KEYBOARD_PASSKEY_REQUEST:
+
+		__bluetooth_request_to_cancel();
 
 		break;
 
@@ -138,6 +173,7 @@ static void __bluetooth_remove_all_event(struct bt_popup_appdata *ad)
 		break;
 
 	case BT_EVENT_PUSH_AUTHORIZE_REQUEST:
+	case BT_EVENT_EXCHANGE_REQUEST:
 
 		dbus_g_proxy_call_no_reply(ad->obex_proxy,
 					   "ReplyAuthorize",
@@ -206,37 +242,25 @@ static void __bluetooth_input_request_cb(void *data,
 	struct bt_popup_appdata *ad = (struct bt_popup_appdata *)data;
 	const char *event = elm_object_text_get(obj);
 	int response = 0;
-
 	char *input_text = NULL;
 	char *convert_input_text = NULL;
 
 	if (ad == NULL)
 		return;
 
+	/* BT_EVENT_PIN_REQUEST / BT_EVENT_PASSKEY_REQUEST */
 
-	if (ad->entry == NULL) {
-		/* BT_EVENT_KEYBOARD_PASSKEY_REQUEST */
-		convert_input_text = strdup(ad->passkey);
+	input_text = (char *)elm_entry_entry_get(ad->entry);
 
-		if (!strcmp(event, BT_STR_YES))
-			response = 1;
-		else
-			response = 0;
-	} else {
-		/* BT_EVENT_PIN_REQUEST / BT_EVENT_PASSKEY_REQUEST */
-
-			input_text = (char *)elm_entry_entry_get(ad->entry);
-
-		if (input_text) {
-			convert_input_text =
-			    elm_entry_markup_to_utf8(input_text);
-		}
-
-		if (!strcmp(event, BT_STR_DONE))
-			response = 1;
-		else
-			response = 0;
+	if (input_text) {
+		convert_input_text =
+		    elm_entry_markup_to_utf8(input_text);
 	}
+
+	if (!strcmp(event, BT_STR_OK))
+		response = 1;
+	else
+		response = 0;
 
 	if (convert_input_text == NULL)
 		return;
@@ -246,8 +270,7 @@ static void __bluetooth_input_request_cb(void *data,
 
 	if (response == 1) {
 		bt_log_print(BT_POPUP, "Done case");
-		if (ad->event_type == BT_EVENT_PIN_REQUEST ||
-		    ad->event_type == BT_EVENT_KEYBOARD_PASSKEY_REQUEST) {
+		if (ad->event_type == BT_EVENT_PIN_REQUEST) {
 			dbus_g_proxy_call_no_reply(ad->agent_proxy,
 						   "ReplyPinCode",
 						   G_TYPE_UINT, BT_AGENT_ACCEPT,
@@ -266,8 +289,7 @@ static void __bluetooth_input_request_cb(void *data,
 		}
 	} else {
 		bt_log_print(BT_POPUP, "Cancel case");
-		if (ad->event_type == BT_EVENT_PIN_REQUEST ||
-		    ad->event_type == BT_EVENT_KEYBOARD_PASSKEY_REQUEST) {
+		if (ad->event_type == BT_EVENT_PIN_REQUEST) {
 			dbus_g_proxy_call_no_reply(ad->agent_proxy,
 						   "ReplyPinCode",
 						   G_TYPE_UINT, BT_AGENT_CANCEL,
@@ -291,6 +313,18 @@ static void __bluetooth_input_request_cb(void *data,
 	__bluetooth_win_del(ad);
 }
 
+static void __bluetooth_input_cancel_cb(void *data,
+				       Evas_Object *obj, void *event_info)
+{
+	struct bt_popup_appdata *ad = (struct bt_popup_appdata *)data;
+
+	__bluetooth_request_to_cancel();
+
+	__bluetooth_delete_input_view(ad);
+
+	__bluetooth_win_del(ad);
+}
+
 static void __bluetooth_passkey_confirm_cb(void *data,
 					 Evas_Object *obj, void *event_info)
 {
@@ -303,7 +337,7 @@ static void __bluetooth_passkey_confirm_cb(void *data,
 	if (ad == NULL)
 		return;
 
-	if (!strcmp(event, BT_STR_YES)) {
+	if (!strcmp(event, BT_STR_OK)) {
 		dbus_g_proxy_call_no_reply(ad->agent_proxy, "ReplyConfirmation",
 					   G_TYPE_UINT, BT_AGENT_ACCEPT,
 					   G_TYPE_INVALID, G_TYPE_INVALID);
@@ -436,52 +470,6 @@ static void __bluetooth_confirm_overwrite_request_cb(void *data,
 	__bluetooth_win_del(ad);
 }
 
-static Evas_Object *__bluetooth_create_bg(Evas_Object *parent, char *style)
-{
-	Evas_Object *bg = NULL;
-
-	bg = elm_bg_add(parent);
-
-	evas_object_size_hint_weight_set(bg, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-
-	if (style)
-		elm_object_style_set(bg, style);
-
-	elm_win_resize_object_add(parent, bg);
-
-	evas_object_show(bg);
-
-	return bg;
-}
-
-static Evas_Object *__bluetooth_create_layout(Evas_Object *parent)
-{
-	Evas_Object *layout = NULL;
-
-	layout = elm_layout_add(parent);
-
-	elm_layout_theme_set(layout, "layout", "application", "default");
-	evas_object_size_hint_weight_set(layout, EVAS_HINT_EXPAND,
-					 EVAS_HINT_EXPAND);
-
-	elm_win_resize_object_add(parent, layout);
-
-	evas_object_show(layout);
-
-	return layout;
-}
-
-static Evas_Object *__bluetooth_add_navigationbar(Evas_Object *parent)
-{
-	Evas_Object *naviframe = NULL;
-
-	naviframe = elm_naviframe_add(parent);
-	elm_object_part_content_set(parent, "elm.swallow.content", naviframe);
-	evas_object_show(naviframe);
-
-	return naviframe;
-}
-
 static void __bluetooth_ime_hide(void)
 {
 	Ecore_IMF_Context *imf_context = NULL;
@@ -506,12 +494,19 @@ static void __bluetooth_entry_change_cb(void *data, Evas_Object *obj,
 		if (convert_input_text) {
 			text_length = strlen(convert_input_text);
 
-			if (text_length == 0)
+			if (text_length == 0) {
 				elm_object_disabled_set(ad->edit_field_save_btn,
 							EINA_TRUE);
-			else
+				elm_object_signal_emit(ad->editfield,
+							"elm,state,eraser,hide",
+							"elm");
+			} else {
 				elm_object_disabled_set(ad->edit_field_save_btn,
 							EINA_FALSE);
+				elm_object_signal_emit(ad->editfield,
+							"elm,state,eraser,show",
+							"elm");
+			}
 
 			if (ad->event_type == BT_EVENT_PASSKEY_REQUEST) {
 				if (text_length > BT_PK_MLEN) {
@@ -543,51 +538,40 @@ static void __bluetooth_entry_change_cb(void *data, Evas_Object *obj,
 	}
 }
 
-static Evas_Object *__bluetooth_gl_icon_get(void *data,
-					  Evas_Object *obj, const char *part)
+static void __bluetooth_entry_focused_cb(void *data, Evas_Object *obj,
+				      void *event_info)
 {
-	Evas_Object *entry = NULL;
-	Evas_Object *layout = NULL;
-	struct bt_popup_appdata *ad = NULL;
+	if (!elm_entry_is_empty(obj))
+		elm_object_signal_emit(data, "elm,state,eraser,show", "elm");
 
-	bt_log_print(BT_POPUP, "__bluetooth_gl_icon_get");
+	elm_object_signal_emit(data, "elm,state,guidetext,hide", "elm");
+}
 
-	ad = (struct bt_popup_appdata *)data;
+static void __bluetooth_entry_unfocused_cb(void *data, Evas_Object *obj,
+				      void *event_info)
+{
+	if (elm_entry_is_empty(obj))
+		elm_object_signal_emit(data, "elm,state,guidetext,show", "elm");
 
-	if (data == NULL) {
-		bt_log_print(BT_POPUP, "data is NULL");
-		return NULL;
-	}
+	elm_object_signal_emit(data, "elm,state,eraser,hide", "elm");
+}
 
-	if (!strcmp(part, "elm.icon")) {
+static void __bluetooth_eraser_clicked_cb(void* data, Evas_Object* obj,
+				const char* emission, const char* source)
+{
+	elm_entry_entry_set(data, "");
+}
 
-		layout = elm_layout_add(obj);
-		elm_layout_theme_set(layout, "layout", "editfield", "default");
+static void __bluetooth_check_chagned_cb(void *data, Evas_Object *obj,
+				      void *event_info)
+{
+	Eina_Bool state = EINA_FALSE;
 
-		entry = elm_entry_add(obj);
-		ad->entry = entry;
+        if (obj == NULL)
+                return;
 
-		elm_entry_single_line_set(entry, EINA_TRUE);
-		elm_entry_scrollable_set(entry, EINA_TRUE);
-		elm_entry_password_set(entry, EINA_TRUE);
-
-		elm_entry_input_panel_layout_set(entry,
-			 ELM_INPUT_PANEL_LAYOUT_PHONENUMBER);
-
-		elm_entry_input_panel_enabled_set(entry, EINA_TRUE);
-
-		elm_object_part_content_set(layout, "elm.swallow.content", entry);
-
-		evas_object_show(entry);
-		elm_object_focus_set(entry, EINA_TRUE);
-
-		evas_object_smart_callback_add(entry, "changed",
-			__bluetooth_entry_change_cb, ad);
-
-		return layout;
-	}
-
-	return NULL;
+        state = elm_check_state_get(obj);
+        elm_entry_password_set(data, !state);
 }
 
 static void __bluetooth_draw_popup(struct bt_popup_appdata *ad,
@@ -608,22 +592,25 @@ static void __bluetooth_draw_popup(struct bt_popup_appdata *ad,
 
 	if (title != NULL) {
 		snprintf(temp_str, BT_TITLE_STR_MAX_LEN+BT_TEXT_EXTRA_LEN,
-			"<align=center>%s</font>", title);
+			"<align=center>%s</align>", title);
 		elm_object_text_set(ad->popup, temp_str);
 	}
 
 	if ((btn1_text != NULL) && (btn2_text != NULL)) {
 		btn1 = elm_button_add(ad->popup);
+		elm_object_style_set(btn1, "popup_button/default");
 		elm_object_text_set(btn1, btn1_text);
 		elm_object_part_content_set(ad->popup, "button1", btn1);
 		evas_object_smart_callback_add(btn1, "clicked", func, ad);
 
 		btn2 = elm_button_add(ad->popup);
+		elm_object_style_set(btn2, "popup_button/default");
 		elm_object_text_set(btn2, btn2_text);
 		elm_object_part_content_set(ad->popup, "button2", btn2);
 		evas_object_smart_callback_add(btn2, "clicked", func, ad);
 	} else if (btn1_text != NULL) {
 		btn1 = elm_button_add(ad->popup);
+		elm_object_style_set(btn1, "popup_button/default");
 		elm_object_text_set(btn1, btn1_text);
 		elm_object_part_content_set(ad->popup, "button1", btn1);
 		evas_object_smart_callback_add(btn1, "clicked", func, ad);
@@ -641,95 +628,140 @@ static void __bluetooth_draw_popup(struct bt_popup_appdata *ad,
 }
 
 static void __bluetooth_draw_input_view(struct bt_popup_appdata *ad,
-			const char *title,
+			const char *title, const char *text,
 			void (*func)
 			(void *data, Evas_Object *obj, void *event_info))
 {
-	Evas_Object *bg = NULL;
-	Evas_Object *genlist = NULL;
+	Ecore_X_Window xwin;
+	Evas_Object *conformant = NULL;
+	Evas_Object *content = NULL;
+	Evas_Object *passpopup = NULL;
+	Evas_Object *box = NULL;
+	Evas_Object *label = NULL;
+	Evas_Object *editfield = NULL;
+	Evas_Object *entry = NULL;
+	Evas_Object *check = NULL;
 	Evas_Object *l_button = NULL;
 	Evas_Object *r_button = NULL;
-	Elm_Object_Item *git = NULL;
-	Elm_Object_Item *navi_it;
-	Ecore_X_Window xwin;
 
-	evas_object_show(ad->win_main);
+	if (ad == NULL || ad->win_main == NULL) {
+		bt_log_print(BT_POPUP, "Invalid parameter");
+		return;
+	}
 
-	bg = __bluetooth_create_bg(ad->win_main, "group_list");
+	conformant = elm_conformant_add(ad->win_main);
+	if (conformant == NULL) {
+		bt_log_print(BT_POPUP, "conformant is NULL");
+		return;
+	}
+	ad->popup = conformant;
 
-	ad->layout_main = __bluetooth_create_layout(ad->win_main);
+	elm_win_conformant_set(ad->win_main, EINA_TRUE);
+	elm_win_resize_object_add(ad->win_main, conformant);
+	evas_object_size_hint_weight_set(conformant, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+	evas_object_size_hint_align_set(conformant, EVAS_HINT_FILL, EVAS_HINT_FILL);
+	evas_object_show(conformant);
 
-	/* Show Indicator */
-	elm_win_indicator_mode_set(ad->win_main, ELM_WIN_INDICATOR_SHOW);
+	content = elm_layout_add(conformant);
+	elm_object_content_set(conformant, content);
 
-	ad->navi_fr = __bluetooth_add_navigationbar(ad->layout_main);
+	passpopup = elm_popup_add(content);
+	elm_object_part_text_set(passpopup, "title,text", title);
 
-	/* Create genlist */
-	genlist = elm_genlist_add(ad->navi_fr);
-	evas_object_show(genlist);
+	box = elm_box_add(passpopup);
+	evas_object_size_hint_weight_set(box, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+	evas_object_size_hint_align_set(box, EVAS_HINT_FILL, EVAS_HINT_FILL);
+	evas_object_show(box);
 
-	/* Set item class for dialogue seperator */
-	ad->sp_itc.item_style = "dialogue/separator/11/with_line";
-	ad->sp_itc.func.text_get = NULL;
-	ad->sp_itc.func.content_get = NULL;
-	ad->sp_itc.func.state_get = NULL;
-	ad->sp_itc.func.del = NULL;
+	label = elm_label_add(box);
+	elm_object_style_set(label, "popup/default");
+	elm_object_text_set(label, text);
+	elm_label_line_wrap_set(label, ELM_WRAP_CHAR);
+	evas_object_size_hint_weight_set(label, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+	evas_object_size_hint_align_set(label, EVAS_HINT_FILL, EVAS_HINT_FILL);
+	evas_object_show(label);
+	elm_box_pack_end(box, label);
 
-	ad->itc.item_style = "dialogue/1icon";
-	ad->itc.func.text_get = NULL;
-	ad->itc.func.content_get = __bluetooth_gl_icon_get;
-	ad->itc.func.state_get = NULL;
-	ad->itc.func.del = NULL;
+	editfield = elm_layout_add(box);
+	elm_layout_theme_set(editfield, "layout", "editfield", "default");
+	evas_object_size_hint_weight_set(editfield, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+	evas_object_size_hint_align_set(editfield, EVAS_HINT_FILL, EVAS_HINT_FILL);
+	ad->editfield = editfield;
 
-	/* Seperator */
-	git = elm_genlist_item_append(genlist, &ad->sp_itc, NULL, NULL,
-				    ELM_GENLIST_ITEM_NONE, NULL, NULL);
+	entry = elm_entry_add(box);
+	elm_object_part_content_set(editfield, "elm.swallow.content", entry);
+	elm_object_part_text_set(editfield, "elm.text", text);
+	elm_entry_single_line_set(entry, EINA_TRUE);
+	elm_entry_scrollable_set(entry, EINA_TRUE);
+	ad->entry = entry;
 
-	elm_genlist_item_select_mode_set(git, ELM_OBJECT_SELECT_MODE_DISPLAY_ONLY);
+	evas_object_smart_callback_add(entry, "changed",
+				__bluetooth_entry_change_cb,
+				ad);
 
-	/*editfield for dialogue item (dialogue item) */
-	elm_genlist_item_append(genlist, &ad->itc, ad, NULL,
-				ELM_GENLIST_ITEM_NONE, NULL, ad);
+	evas_object_smart_callback_add(entry, "focused",
+				__bluetooth_entry_focused_cb,
+				editfield);
 
-	navi_it = elm_naviframe_item_push(ad->navi_fr, BT_STR_ENTER_PIN,
-		       NULL, NULL, genlist, NULL);
+	evas_object_smart_callback_add(entry, "unfocused",
+				__bluetooth_entry_unfocused_cb,
+				editfield);
 
-	l_button = elm_button_add(ad->navi_fr);
-	elm_object_style_set(l_button, "naviframe/title/default");
-	elm_object_text_set(l_button, BT_STR_CANCEL);
-	evas_object_show(l_button);
+	elm_object_signal_callback_add(editfield, "elm,eraser,clicked", "elm",
+				(Edje_Signal_Cb)__bluetooth_eraser_clicked_cb,
+				entry);
+
+	elm_entry_password_set(entry, TRUE);
+	elm_entry_input_panel_layout_set(entry,
+				ELM_INPUT_PANEL_LAYOUT_NUMBERONLY);
+
+	evas_object_show(entry);
+	evas_object_show(editfield);
+	elm_object_focus_set(entry, EINA_TRUE);
+	elm_box_pack_end(box, editfield);
+
+	check = elm_check_add(box);
+	elm_object_text_set(check, BT_STR_SHOW_PASSWORD);
+	elm_object_focus_allow_set(check, EINA_FALSE);
+	evas_object_size_hint_weight_set(check, EVAS_HINT_EXPAND,
+					EVAS_HINT_EXPAND);
+	evas_object_size_hint_align_set(check, EVAS_HINT_FILL,
+					EVAS_HINT_FILL);
+	evas_object_smart_callback_add(check, "changed",
+				__bluetooth_check_chagned_cb, entry);
+	evas_object_show(check);
+	elm_box_pack_end(box, check);
+
+	elm_object_content_set(passpopup, box);
+
+	l_button = elm_button_add(ad->win_main);
+	elm_object_style_set(l_button, "popup_button/default");
+	elm_object_text_set(l_button, BT_STR_OK);
+	elm_object_part_content_set(passpopup, "button1", l_button);
 	evas_object_smart_callback_add(l_button, "clicked", func, ad);
-	elm_object_item_part_content_set(navi_it, "title_left_btn", l_button);
+	elm_object_disabled_set(l_button, EINA_TRUE);
 
-	r_button = elm_button_add(ad->navi_fr);
-	elm_object_style_set(r_button, "naviframe/title/default");
-	elm_object_text_set(r_button, BT_STR_DONE);
-	evas_object_show(r_button);
+	ad->edit_field_save_btn = l_button;
+
+	r_button = elm_button_add(ad->win_main);
+	elm_object_style_set(r_button, "popup_button/default");
+	elm_object_text_set(r_button, BT_STR_CANCEL);
+	elm_object_part_content_set(passpopup, "button2", r_button);
 	evas_object_smart_callback_add(r_button, "clicked", func, ad);
-	elm_object_disabled_set(r_button, EINA_TRUE);
+	evas_object_show(passpopup);
 
-	elm_object_item_part_content_set(navi_it, "title_right_btn", r_button);
-
-	ad->edit_field_save_btn = r_button;
-
-	xwin = elm_win_xwindow_get(ad->layout_main);
+	xwin = elm_win_xwindow_get(conformant);
 	ecore_x_netwm_window_type_set(xwin, ECORE_X_WINDOW_TYPE_NOTIFICATION);
 	utilx_set_system_notification_level(ecore_x_display_get(), xwin,
 				UTILX_NOTIFICATION_LEVEL_NORMAL);
+
+	evas_object_show(ad->popup);
+	evas_object_show(ad->win_main);
 }
 
 static void __bluetooth_delete_input_view(struct bt_popup_appdata *ad)
 {
 	__bluetooth_ime_hide();
-
-	if (ad->navi_fr)
-		elm_naviframe_item_pop(ad->navi_fr);
-
-	if (ad->layout_main)
-		evas_object_del(ad->layout_main);
-
-	ad->navi_fr = NULL;
-	ad->layout_main = NULL;
 }
 
 /* AUL bundle handler */
@@ -751,7 +783,6 @@ static int __bluetooth_launch_handler(struct bt_popup_appdata *ad,
 		return -1;
 
 	if (!strcasecmp(event_type, "pin-request")) {
-		ad->event_type = BT_EVENT_PIN_REQUEST;
 		timeout = BT_AUTHENTICATION_TIMEOUT;
 
 		device_name = bundle_get_val(kb, "device-name");
@@ -760,16 +791,18 @@ static int __bluetooth_launch_handler(struct bt_popup_appdata *ad,
 			conv_str = elm_entry_utf8_to_markup(device_name);
 
 		snprintf(view_title, BT_TITLE_STR_MAX_LEN,
-			 "%s (%s)", BT_STR_ENTER_PIN, conv_str);
+			 "%s", BT_STR_BLUETOOTH_PAIRING_REQUEST);
+
+		snprintf(text, BT_GLOBALIZATION_STR_LENGTH,
+			 BT_STR_ENTER_PIN_TO_PAIR, conv_str);
 
 		if (conv_str)
 			free(conv_str);
 
 		/* Request user inputted PIN for basic pairing */
-		__bluetooth_draw_input_view(ad, view_title,
+		__bluetooth_draw_input_view(ad, view_title, text,
 					  __bluetooth_input_request_cb);
 	} else if (!strcasecmp(event_type, "passkey-confirm-request")) {
-		ad->event_type = BT_EVENT_PASSKEY_CONFIRM_REQUEST;
 		timeout = BT_AUTHENTICATION_TIMEOUT;
 
 		device_name = bundle_get_val(kb, "device-name");
@@ -778,11 +811,9 @@ static int __bluetooth_launch_handler(struct bt_popup_appdata *ad,
 		if (device_name && passkey) {
 			conv_str = elm_entry_utf8_to_markup(device_name);
 
-			snprintf(text, BT_GLOBALIZATION_STR_LENGTH,
-			     BT_STR_PASSKEY_MATCH_Q, conv_str);
-
 			snprintf(view_title, BT_TITLE_STR_MAX_LEN,
-			     "%s<br>%s", text, passkey);
+			     BT_STR_CONFIRM_PASSKEY_PS_TO_PAIR_WITH_PS,
+			     conv_str, passkey);
 
 			bt_log_print(BT_POPUP, "title: %s", view_title);
 
@@ -790,7 +821,7 @@ static int __bluetooth_launch_handler(struct bt_popup_appdata *ad,
 				free(conv_str);
 
 			__bluetooth_draw_popup(ad, view_title,
-					BT_STR_YES, BT_STR_NO,
+					BT_STR_OK, BT_STR_CANCEL,
 					__bluetooth_passkey_confirm_cb);
 		} else {
 			timeout = BT_ERROR_TIMEOUT;
@@ -798,7 +829,6 @@ static int __bluetooth_launch_handler(struct bt_popup_appdata *ad,
 	} else if (!strcasecmp(event_type, "passkey-request")) {
 		const char *device_name = NULL;
 
-		ad->event_type = BT_EVENT_PASSKEY_REQUEST;
 		timeout = BT_AUTHENTICATION_TIMEOUT;
 
 		device_name = bundle_get_val(kb, "device-name");
@@ -807,19 +837,21 @@ static int __bluetooth_launch_handler(struct bt_popup_appdata *ad,
 			conv_str = elm_entry_utf8_to_markup(device_name);
 
 		snprintf(view_title, BT_TITLE_STR_MAX_LEN,
-			 "%s (%s)", BT_STR_ENTER_PIN, conv_str);
+			 "%s", BT_STR_BLUETOOTH_PAIRING_REQUEST);
+
+		snprintf(text, BT_GLOBALIZATION_STR_LENGTH,
+			 BT_STR_ENTER_PIN_TO_PAIR, conv_str);
 
 		if (conv_str)
 			free(conv_str);
 
 		/* Request user inputted Passkey for basic pairing */
-		__bluetooth_draw_input_view(ad, view_title,
+		__bluetooth_draw_input_view(ad, view_title, text,
 					  __bluetooth_input_request_cb);
 
 	} else if (!strcasecmp(event_type, "passkey-display-request")) {
 		/* Nothing to do */
 	} else if (!strcasecmp(event_type, "authorize-request")) {
-		ad->event_type = BT_EVENT_AUTHORIZE_REQUEST;
 		timeout = BT_AUTHORIZATION_TIMEOUT;
 
 		device_name = bundle_get_val(kb, "device-name");
@@ -837,7 +869,6 @@ static int __bluetooth_launch_handler(struct bt_popup_appdata *ad,
 				     __bluetooth_authorization_request_cb);
 	} else if (!strcasecmp(event_type, "app-confirm-request")) {
 		bt_log_print(BT_POPUP, "app-confirm-request");
-		ad->event_type = BT_EVENT_APP_CONFIRM_REQUEST;
 		timeout = BT_AUTHORIZATION_TIMEOUT;
 
 		const char *title = NULL;
@@ -862,7 +893,6 @@ static int __bluetooth_launch_handler(struct bt_popup_appdata *ad,
 					     __bluetooth_app_confirm_cb);
 		}
 	} else if (!strcasecmp(event_type, "push-authorize-request")) {
-		ad->event_type = BT_EVENT_PUSH_AUTHORIZE_REQUEST;
 		timeout = BT_AUTHORIZATION_TIMEOUT;
 
 		device_name = bundle_get_val(kb, "device-name");
@@ -880,7 +910,6 @@ static int __bluetooth_launch_handler(struct bt_popup_appdata *ad,
 		__bluetooth_draw_popup(ad, view_title, BT_STR_YES, BT_STR_NO,
 				__bluetooth_push_authorization_request_cb);
 	} else if (!strcasecmp(event_type, "confirm-overwrite-request")) {
-		ad->event_type = BT_EVENT_CONFIRM_OVERWRITE_REQUEST;
 		timeout = BT_AUTHORIZATION_TIMEOUT;
 
 		file = bundle_get_val(kb, "file");
@@ -891,22 +920,16 @@ static int __bluetooth_launch_handler(struct bt_popup_appdata *ad,
 		__bluetooth_draw_popup(ad, view_title, BT_STR_YES, BT_STR_NO,
 				__bluetooth_confirm_overwrite_request_cb);
 	} else if (!strcasecmp(event_type, "keyboard-passkey-request")) {
-		ad->event_type = BT_EVENT_KEYBOARD_PASSKEY_REQUEST;
 		timeout = BT_AUTHENTICATION_TIMEOUT;
 
 		device_name = bundle_get_val(kb, "device-name");
 		passkey = bundle_get_val(kb, "passkey");
 
 		if (device_name && passkey) {
-			snprintf(ad->passkey, sizeof(ad->passkey), "%s", passkey);
-
 			conv_str = elm_entry_utf8_to_markup(device_name);
 
-			snprintf(text, BT_GLOBALIZATION_STR_LENGTH,
-			     BT_STR_PASSKEY_MATCH_Q, conv_str);
-
 			snprintf(view_title, BT_TITLE_STR_MAX_LEN,
-			     "%s<br>%s", text, passkey);
+			     BT_STR_ENTER_PS_ON_PS_TO_PAIR, passkey, conv_str);
 
 			bt_log_print(BT_POPUP, "title: %s", view_title);
 
@@ -914,14 +937,13 @@ static int __bluetooth_launch_handler(struct bt_popup_appdata *ad,
 				free(conv_str);
 
 			__bluetooth_draw_popup(ad, view_title,
-						BT_STR_YES, BT_STR_NO,
-						__bluetooth_input_request_cb);
+						BT_STR_CANCEL, NULL,
+						__bluetooth_input_cancel_cb);
 		} else {
 			timeout = BT_ERROR_TIMEOUT;
 		}
 	} else if (!strcasecmp(event_type, "bt-information")) {
 		bt_log_print(BT_POPUP, "bt-information");
-		ad->event_type = BT_EVENT_INFORMATION;
 		timeout = BT_NOTIFICATION_TIMEOUT;
 
 		const char *title = NULL;
@@ -943,25 +965,22 @@ static int __bluetooth_launch_handler(struct bt_popup_appdata *ad,
 			__bluetooth_draw_popup(ad, title, NULL, NULL,
 					     __bluetooth_app_confirm_cb);
 		}
-	} else if (!strcasecmp(event_type, "bt-security")) {
-		const char *type = NULL;
+	} else if (!strcasecmp(event_type, "exchange-request")) {
+		timeout = BT_AUTHORIZATION_TIMEOUT;
 
-		bt_log_print(BT_POPUP, "bt-security");
-		ad->event_type = BT_EVENT_INFORMATION;
-		timeout = BT_NOTIFICATION_TIMEOUT;
+		device_name = bundle_get_val(kb, "device-name");
 
-		type = bundle_get_val(kb, "type");
+		if (device_name)
+			conv_str = elm_entry_utf8_to_markup(device_name);
 
-		if (!strcasecmp(type, "disabled")) {
-			snprintf(view_title, BT_TITLE_STR_MAX_LEN,
-				 BT_STR_DISABLED_RESTRICTS);
-		} else if (!strcasecmp(type, "handsfree")) {
-			snprintf(view_title, BT_TITLE_STR_MAX_LEN,
-				 BT_STR_HANDS_FREE_RESTRICTS);
-		}
+		snprintf(view_title, BT_TITLE_STR_MAX_LEN,
+			 BT_STR_EXCHANGE_OBJECT_WITH_PS_Q, conv_str);
 
-		__bluetooth_draw_popup(ad, view_title, BT_STR_OK, NULL,
-					__bluetooth_app_confirm_cb);
+		if (conv_str)
+			free(conv_str);
+
+		__bluetooth_draw_popup(ad, view_title, BT_STR_YES, BT_STR_NO,
+				     __bluetooth_authorization_request_cb);
 	} else {
 
 		return -1;
@@ -1023,16 +1042,15 @@ static void __bluetooth_session_init(struct bt_popup_appdata *ad)
 						    "org.bluez.frwk_agent",
 						    "/org/bluez/agent/frwk_agent",
 						    "org.bluez.Agent");
-	if (!ad->agent_proxy) {
+	if (!ad->agent_proxy)
 		bt_log_print(BT_POPUP, "Could not create a agent dbus proxy");
-	}
+
 	ad->obex_proxy = dbus_g_proxy_new_for_name(conn,
 						   "org.bluez.frwk_agent",
 						   "/org/obex/ops_agent",
 						   "org.openobex.Agent");
-	if (!ad->agent_proxy) {
-		bt_log_print(BT_POPUP, "Could not create a agent dbus proxy");
-	}
+	if (!ad->obex_proxy)
+		bt_log_print(BT_POPUP, "Could not create obex dbus proxy");
 
 	if (!__bluetooth_init_app_signal(ad))
 		bt_log_print(BT_POPUP, "__bt_syspopup_init_app_signal failed");
@@ -1076,14 +1094,10 @@ static int __bluetooth_terminate(void *data)
 	if (ad->popup)
 		evas_object_del(ad->popup);
 
-	if (ad->layout_main)
-		evas_object_del(ad->layout_main);
-
 	if (ad->win_main)
 		evas_object_del(ad->win_main);
 
 	ad->popup = NULL;
-	ad->layout_main = NULL;
 	ad->win_main = NULL;
 
 	return 0;
@@ -1118,38 +1132,39 @@ static int __bluetooth_reset(bundle *b, void *data)
 	event_type = bundle_get_val(b, "event-type");
 
 	if (event_type != NULL) {
-		if (syspopup_has_popup(b)) {
-			if (!strcasecmp(event_type, "terminate")) {
-				__bluetooth_win_del(ad);
-				return 0;
-			} else {
-				/* Destroy the existing popup*/
-				__bluetooth_cleanup(ad);
-				/* create window */
-				ad->win_main = __bluetooth_create_win(PACKAGE);
-				if (ad->win_main == NULL)
-					return -1;
-			}
+		if (!strcasecmp(event_type, "terminate")) {
+			__bluetooth_win_del(ad);
+			return 0;
 		}
-		if (strcasecmp(event_type, "pin-request") != 0 &&
-		      strcasecmp(event_type, "passkey-request") != 0)
-			elm_win_alpha_set(ad->win_main, EINA_TRUE);
+
+		if (syspopup_has_popup(b)) {
+			/* Destroy the existing popup*/
+			__bluetooth_cleanup(ad);
+			/* create window */
+			ad->win_main = __bluetooth_create_win(PACKAGE);
+			if (ad->win_main == NULL)
+				return -1;
+		}
+
+		__bluetooth_parse_event(ad, event_type);
+
+		elm_win_alpha_set(ad->win_main, EINA_TRUE);
 
 		ret = syspopup_create(b, &handler, ad->win_main, ad);
 		if (ret == -1) {
 			bt_log_print(BT_POPUP, "syspopup_create err");
-		}
-		else {
+			__bluetooth_remove_all_event(ad);
+		} else {
 			ret = __bluetooth_launch_handler(ad,
 						       b, event_type);
 
 			if (ret != 0)
-				return -1;
+				__bluetooth_remove_all_event(ad);
 
 			/* Change LCD brightness */
 			ret = pm_change_state(LCD_NORMAL);
 			if (ret != 0)
-				return -1;
+				bt_log_print(BT_POPUP, "Fail to change LCD");
 		}
 	} else {
 		bt_log_print(BT_POPUP, "event type is NULL \n");

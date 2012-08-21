@@ -9,10 +9,10 @@
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
 
+PREFIX ?= /opt/apps/org.tizen.bluetooth
 CFLAGS ?= -Wall -g
 CXXFLAGS ?=  -Wall -g
-LDFLAGS ?= 
-PREFIX ?= /usr
+LDFLAGS ?=
 DATADIR ?= /opt
 
 ifneq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
@@ -109,12 +109,12 @@ binary-indep: build install
 binary-arch: build install
 	dh_testdir
 	dh_testroot
-	dh_installchangelogs 
-	dh_installdocs
-	dh_installexamples
+#	dh_installchangelogs
+#	dh_installdocs
+#	dh_installexamples
 	dh_install --sourcedir=debian/tmp
 #	dh_installmenu
-#	dh_installdebconf	
+#	dh_installdebconf
 #	dh_installlogrotate
 #	dh_installemacsen
 #	dh_installpam
@@ -123,7 +123,7 @@ binary-arch: build install
 #	dh_installinit
 #	dh_installcron
 #	dh_installinfo
-	dh_installman
+#	dh_installman
 	dh_link
 	dh_strip --dbg-package=org.tizen.bt-syspopup-dbg
 	dh_compress

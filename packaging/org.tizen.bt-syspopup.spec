@@ -1,8 +1,12 @@
+%define _optdir /opt
+%define _usrdir /usr
+%define _appdir %{_optdir}/apps
+
 Name:       org.tizen.bt-syspopup
 Summary:    bluetooth system-popup application (bluetooth system popup)
-Version:    0.2.37
-Release:    2
-Group:      TO_BE_FILLED
+Version: 0.2.52
+Release:    1
+Group:      main
 License:    Flora Software License
 Source0:    %{name}-%{version}.tar.gz
 BuildRequires:  pkgconfig(evas)
@@ -10,15 +14,19 @@ BuildRequires:  pkgconfig(ecore-input)
 BuildRequires:  pkgconfig(ethumb)
 BuildRequires:  pkgconfig(elementary)
 BuildRequires:  pkgconfig(efreet)
+BuildRequires:  pkgconfig(sysman)
 BuildRequires:  pkgconfig(sensor)
 BuildRequires:  pkgconfig(appcore-efl)
-BuildRequires:  pkgconfig(devman_haptic)
+BuildRequires:  pkgconfig(devman)
 BuildRequires:  pkgconfig(utilX)
 BuildRequires:  pkgconfig(syspopup)
 BuildRequires:  pkgconfig(dlog)
 BuildRequires:  pkgconfig(pmapi)
 BuildRequires:  pkgconfig(dbus-glib-1)
 BuildRequires:  pkgconfig(glib-2.0)
+BuildRequires:  pkgconfig(devman_haptic)
+BuildRequires:  pkgconfig(aul)
+BuildRequires:  sysman-internal-devel
 
 BuildRequires:  cmake
 BuildRequires:  gettext-devel
@@ -32,7 +40,7 @@ bluetooth system-popup application (bluetooth system popup).
 
 %build
 
-cmake . -DCMAKE_INSTALL_PREFIX=/usr
+cmake . -DCMAKE_INSTALL_PREFIX=%{_appdir}/org.tizen.bt-syspopup
 make %{?jobs:-j%jobs}
 
 %install
@@ -42,9 +50,7 @@ rm -rf %{buildroot}
 
 %files
 %defattr(-,root,root,-)
-/opt/share/applications/org.tizen.bt-syspopup.desktop
-/usr/bin/bt-syspopup
-/usr/share/icon/01_header_icon_cancel.png
-/usr/share/icon/01_header_icon_done.png
-/usr/share/process-info/bt-syspopup.ini
-
+%{_usrdir}/share/packages/org.tizen.bt-syspopup.xml
+%{_appdir}/org.tizen.bt-syspopup/bin/bt-syspopup
+%{_optdir}/share/icons/default/small/org.tizen.bt-syspopup.png
+%{_optdir}/share/process-info/bt-syspopup.ini

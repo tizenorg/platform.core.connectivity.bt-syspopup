@@ -1,4 +1,3 @@
-@PREFIX@/bin/bt-syspopup
-/opt/share/applications/org.tizen.bt-syspopup.desktop
-@PREFIX@/share/process-info/bt-syspopup.ini
-@PREFIX@/share/icon/*
+/opt/apps/org.tizen.bt-syspopup/bin/bt-syspopup
+/opt/share/icons/*
+/opt/share/process-info/bt-syspopup.ini
