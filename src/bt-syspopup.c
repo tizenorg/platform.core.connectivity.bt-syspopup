@@ -25,6 +25,7 @@
 #include <E_DBus.h>
 #include <aul.h>
 #include <bluetooth-api.h>
+#include <feedback.h>
 
 #include "bt-syspopup.h"
 
@@ -67,6 +68,28 @@ static void __bluetooth_cleanup(struct bt_popup_appdata *ad)
 	if (ad->agent_proxy) {
 		g_object_unref(ad->agent_proxy);
 		ad->agent_proxy = NULL;
+	}
+}
+
+static void __bluetooth_notify_event(void)
+{
+	int result;
+
+	BT_DBG("Notify event");
+
+	result = feedback_initialize();
+	if (result != FEEDBACK_ERROR_NONE) {
+		BT_ERR("feedback_initialize error : %d", result);
+		return;
+	}
+
+	result = feedback_play(FEEDBACK_PATTERN_GENERAL);
+	BT_DBG("ret value : %d", result);
+
+	result = feedback_deinitialize();
+	if (result != FEEDBACK_ERROR_NONE) {
+		BT_DBG("feedback_initialize error : %d", result);
+		return;
 	}
 }
 
@@ -138,7 +161,7 @@ static void __bluetooth_remove_all_event(struct bt_popup_appdata *ad)
 	case BT_EVENT_PASSKEY_REQUEST:
 
 		dbus_g_proxy_call_no_reply(ad->agent_proxy,
-					   "ReplyPassKey",
+					   "ReplyPasskey",
 					   G_TYPE_UINT, BT_AGENT_CANCEL,
 					   G_TYPE_STRING, "", G_TYPE_INVALID,
 					   G_TYPE_INVALID);
@@ -291,7 +314,7 @@ static void __bluetooth_input_request_cb(void *data,
 						   G_TYPE_INVALID);
 		} else {
 			dbus_g_proxy_call_no_reply(ad->agent_proxy,
-						   "ReplyPassKey",
+						   "ReplyPasskey",
 						   G_TYPE_UINT, BT_AGENT_ACCEPT,
 						   G_TYPE_STRING,
 						   convert_input_text,
@@ -309,7 +332,7 @@ static void __bluetooth_input_request_cb(void *data,
 						   G_TYPE_INVALID);
 		} else {
 			dbus_g_proxy_call_no_reply(ad->agent_proxy,
-						   "ReplyPassKey",
+						   "ReplyPasskey",
 						   G_TYPE_UINT, BT_AGENT_CANCEL,
 						   G_TYPE_STRING, "",
 						   G_TYPE_INVALID,
@@ -1155,6 +1178,8 @@ static int __bluetooth_terminate(void *data)
 {
 	struct bt_popup_appdata *ad = data;
 
+	__bluetooth_ime_hide();
+
 	if (ad->conn) {
 		dbus_g_connection_unref(ad->conn);
 		ad->conn = NULL;
@@ -1233,6 +1258,8 @@ static int __bluetooth_reset(bundle *b, void *data)
 			if (ret != 0)
 				__bluetooth_remove_all_event(ad);
 
+			__bluetooth_notify_event();
+
 			/* Change LCD brightness */
 			ret = pm_change_state(LCD_NORMAL);
 			if (ret != 0)
@@ -1245,7 +1272,7 @@ static int __bluetooth_reset(bundle *b, void *data)
 	return 0;
 }
 
-int main(int argc, char *argv[])
+EXPORT int main(int argc, char *argv[])
 {
 	struct bt_popup_appdata ad;
 	struct appcore_ops ops = {

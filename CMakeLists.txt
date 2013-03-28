@@ -32,6 +32,7 @@ pkg_check_modules(pkgs REQUIRED
 	syspopup
 	utilX
 	bluetooth-api
+	feedback
 	aul)
 
 FOREACH(flag ${pkgs_CFLAGS})

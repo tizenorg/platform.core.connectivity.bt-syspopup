@@ -27,6 +27,7 @@ BuildRequires:  pkgconfig(glib-2.0)
 BuildRequires:  pkgconfig(devman_haptic)
 BuildRequires:  pkgconfig(aul)
 BuildRequires:  pkgconfig(bluetooth-api)
+BuildRequires:  pkgconfig(feedback)
 BuildRequires:  sysman-internal-devel
 BuildRequires:  edje-tools
 
@@ -41,6 +42,8 @@ bluetooth system-popup application (bluetooth system popup).
 
 
 %build
+export CFLAGS+=" -fpie -fvisibility=hidden"
+export LDFLAGS+=" -Wl,--rpath=/usr/lib -Wl,--as-needed -Wl,--unresolved-symbols=ignore-in-shared-libs -pie"
 
 cmake . -DCMAKE_INSTALL_PREFIX=%{_appdir}/org.tizen.bt-syspopup
 make %{?jobs:-j%jobs}

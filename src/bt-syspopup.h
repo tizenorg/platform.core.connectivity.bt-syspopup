@@ -30,6 +30,8 @@
 #define PREFIX "/opt/apps"PACKAGE_NAME
 #endif
 
+#define EXPORT __attribute__((visibility("default")))
+
 #define TEMP_DIR	"/tmp"
 
 #define PACKAGE		"bt-syspopup"
