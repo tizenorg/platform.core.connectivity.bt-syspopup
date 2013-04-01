@@ -587,7 +587,6 @@ static void __bluetooth_draw_popup(struct bt_popup_appdata *ad,
 			Evas_Object *obj, void *event_info))
 {
 	char temp_str[BT_TITLE_STR_MAX_LEN+BT_TEXT_EXTRA_LEN] = { 0 };
-	Ecore_X_Window xwin;
 	Evas_Object *btn1;
 	Evas_Object *btn2;
 
@@ -625,11 +624,6 @@ static void __bluetooth_draw_popup(struct bt_popup_appdata *ad,
 		evas_object_smart_callback_add(btn1, "clicked", func, ad);
 	}
 
-	xwin = elm_win_xwindow_get(ad->popup);
-	ecore_x_netwm_window_type_set(xwin, ECORE_X_WINDOW_TYPE_NOTIFICATION);
-	utilx_set_system_notification_level(ecore_x_display_get(), xwin,
-				UTILX_NOTIFICATION_LEVEL_HIGH);
-
 	evas_object_show(ad->popup);
 	evas_object_show(ad->win_main);
 
@@ -651,7 +645,6 @@ static void __bluetooth_draw_input_view(struct bt_popup_appdata *ad,
 	Evas_Object *check = NULL;
 	Evas_Object *l_button = NULL;
 	Evas_Object *r_button = NULL;
-	Ecore_X_Window xwin;
 
 	if (ad == NULL || ad->win_main == NULL) {
 		BT_ERR("Invalid parameter");
@@ -756,11 +749,6 @@ static void __bluetooth_draw_input_view(struct bt_popup_appdata *ad,
 	elm_object_part_content_set(layout, "elm.swallow.content", label);
 	elm_object_part_content_set(layout, "elm.swallow.entry", editfield);
 	elm_object_part_content_set(layout, "elm.swallow.end", check);
-
-	xwin = elm_win_xwindow_get(ad->popup);
-	ecore_x_netwm_window_type_set(xwin, ECORE_X_WINDOW_TYPE_NOTIFICATION);
-	utilx_set_system_notification_level(ecore_x_display_get(), xwin,
-				UTILX_NOTIFICATION_LEVEL_HIGH);
 
 	evas_object_show(layout);
 	evas_object_show(content);
