@@ -76,5 +76,6 @@ INSTALL(TARGETS ${PROJECT_NAME} DESTINATION /opt/apps/org.tizen.bt-syspopup/bin)
 # install desktop file & icon
 SET(PREFIX ${CMAKE_INSTALL_PREFIX})
 INSTALL(FILES ${CMAKE_BINARY_DIR}/data/org.tizen.bt-syspopup.xml DESTINATION /usr/share/packages/)
+INSTALL(FILES ${CMAKE_BINARY_DIR}/data/org.tizen.bt-syspopup.rule DESTINATION /opt/etc/smack/accesses.d)
 INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/data/org.tizen.bt-syspopup.png DESTINATION /opt/share/icons/default/small)
 INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/data/custom_popup.edj DESTINATION /opt/apps/org.tizen.bt-syspopup/res/edje)
