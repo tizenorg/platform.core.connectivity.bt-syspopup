@@ -5,7 +5,7 @@ org.tizen.bt-syspopup system::share rwxat
 org.tizen.app-tray org.tizen.bt-syspopup r-x--
 org.tizen.bt-syspopup pulseaudio rwxat
 org.tizen.bt-syspopup sys-assert::core rwxat
-e17 org.tizen.bt-syspopup -w---
+e17 org.tizen.bt-syspopup rwx--
 org.tizen.bt-syspopup ug_bluetooth r----
 org.tizen.bt-syspopup system::use_internet r----
 org.tizen.bt-syspopup xorg rw---
