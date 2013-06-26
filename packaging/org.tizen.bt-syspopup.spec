@@ -9,6 +9,7 @@ Release:    1
 Group:      main
 License:    Flora Software License
 Source0:    %{name}-%{version}.tar.gz
+Source1001: 	org.tizen.bt-syspopup.manifest
 BuildRequires:  pkgconfig(evas)
 BuildRequires:  pkgconfig(ecore-input)
 BuildRequires:  pkgconfig(ethumb)
@@ -36,6 +37,7 @@ bluetooth system-popup application (bluetooth system popup).
 
 %prep
 %setup -q
+cp %{SOURCE1001} .
 
 
 %build
@@ -49,6 +51,7 @@ rm -rf %{buildroot}
 
 
 %files
+%manifest %{name}.manifest
 %defattr(-,root,root,-)
 %{_usrdir}/share/packages/org.tizen.bt-syspopup.xml
 %{_appdir}/org.tizen.bt-syspopup/bin/bt-syspopup
