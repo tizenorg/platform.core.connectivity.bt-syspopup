@@ -17,8 +17,6 @@
 #include <stdio.h>
 #include <pmapi.h>
 #include <appcore-efl.h>
-#include <Ecore_X.h>
-#include <utilX.h>
 #include <vconf.h>
 #include <vconf-keys.h>
 #include <syspopup.h>
@@ -1090,16 +1088,11 @@ static void __bluetooth_win_del(void *data)
 static Evas_Object *__bluetooth_create_win(const char *name)
 {
 	Evas_Object *eo;
-	int w;
-	int h;
 
 	eo = elm_win_add(NULL, name, ELM_WIN_DIALOG_BASIC);
 	if (eo) {
 		elm_win_title_set(eo, name);
 		elm_win_borderless_set(eo, EINA_TRUE);
-		ecore_x_window_size_get(ecore_x_window_root_first_get(),
-					&w, &h);
-		evas_object_resize(eo, w, h);
 	}
 
 	return eo;
