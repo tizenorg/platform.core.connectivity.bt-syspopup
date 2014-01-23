@@ -30,7 +30,6 @@ pkg_check_modules(pkgs REQUIRED
 	gobject-2.0
 	pmapi
 	syspopup
-	utilX
 	bluetooth-api
 	feedback
 	aul)
