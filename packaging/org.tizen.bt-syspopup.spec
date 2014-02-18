@@ -4,13 +4,14 @@
 
 Name:       org.tizen.bt-syspopup
 Summary:    bluetooth system-popup application (bluetooth system popup)
-Version: 0.2.56
-Release:    1
+Version:    0.2.56
+Release:    0
 Group:      main
 License:    Flora Software License
 Source0:    %{name}-%{version}.tar.gz
 BuildRequires:  pkgconfig(evas)
 BuildRequires:  pkgconfig(ecore-input)
+BuildRequires:  pkgconfig(edbus)
 BuildRequires:  pkgconfig(ethumb)
 BuildRequires:  pkgconfig(elementary)
 BuildRequires:  pkgconfig(efreet)
