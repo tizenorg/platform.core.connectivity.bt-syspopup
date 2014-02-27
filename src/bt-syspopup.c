@@ -24,6 +24,7 @@
 #include <aul.h>
 #include <bluetooth-api.h>
 #include <feedback.h>
+#include <linux/input.h>
 
 #include "bt-syspopup.h"
 

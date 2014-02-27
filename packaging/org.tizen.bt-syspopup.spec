@@ -1,3 +1,5 @@
+%bcond_with wayland
+
 %define _optdir /opt
 %define _usrdir /usr
 %define _appdir %{_optdir}/apps
@@ -45,7 +47,15 @@ bluetooth system-popup application (bluetooth system popup).
 export CFLAGS+=" -fpie -fvisibility=hidden"
 export LDFLAGS+=" -Wl,--rpath=/usr/lib -Wl,--as-needed -Wl,--unresolved-symbols=ignore-in-shared-libs -pie"
 
-cmake . -DCMAKE_INSTALL_PREFIX=%{_appdir}/org.tizen.bt-syspopup
+cmake . \
+    -DCMAKE_INSTALL_PREFIX=%{_appdir}/org.tizen.bt-syspopup \
+%if %{with wayland}
+    -DWAYLAND_SUPPORT=On \
+%else
+    -DWAYLAND_SUPPORT=Off \
+%endif
+    #eol
+
 make %{?jobs:-j%jobs}
 
 %install
