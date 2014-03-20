@@ -1,16 +1,19 @@
+%bcond_with wayland
+
 %define _optdir /opt
 %define _usrdir /usr
 %define _appdir %{_optdir}/apps
 
 Name:       org.tizen.bt-syspopup
 Summary:    bluetooth system-popup application (bluetooth system popup)
-Version: 0.2.56
-Release:    1
+Version:    0.2.56
+Release:    0
 Group:      main
 License:    Flora Software License
 Source0:    %{name}-%{version}.tar.gz
 BuildRequires:  pkgconfig(evas)
 BuildRequires:  pkgconfig(ecore-input)
+BuildRequires:  pkgconfig(edbus)
 BuildRequires:  pkgconfig(ethumb)
 BuildRequires:  pkgconfig(elementary)
 BuildRequires:  pkgconfig(efreet)
@@ -44,7 +47,15 @@ bluetooth system-popup application (bluetooth system popup).
 export CFLAGS+=" -fpie -fvisibility=hidden"
 export LDFLAGS+=" -Wl,--rpath=/usr/lib -Wl,--as-needed -Wl,--unresolved-symbols=ignore-in-shared-libs -pie"
 
-cmake . -DCMAKE_INSTALL_PREFIX=%{_appdir}/org.tizen.bt-syspopup
+cmake . \
+    -DCMAKE_INSTALL_PREFIX=%{_appdir}/org.tizen.bt-syspopup \
+%if %{with wayland}
+    -DWAYLAND_SUPPORT=On \
+%else
+    -DWAYLAND_SUPPORT=Off \
+%endif
+    #eol
+
 make %{?jobs:-j%jobs}
 
 %install
