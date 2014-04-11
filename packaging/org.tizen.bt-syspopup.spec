@@ -65,7 +65,6 @@ rm -rf %{buildroot}
 
 %files
 %manifest org.tizen.bt-syspopup.manifest
-/opt/etc/smack/accesses.d/org.tizen.bt-syspopup.rule
 %defattr(-,root,root,-)
 %{_usrdir}/share/packages/org.tizen.bt-syspopup.xml
 %{_appdir}/org.tizen.bt-syspopup/bin/bt-syspopup
