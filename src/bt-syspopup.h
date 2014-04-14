@@ -27,7 +27,7 @@
 #endif
 
 #ifndef PREFIX
-#define PREFIX "/opt/apps"PACKAGE_NAME
+#define PREFIX tzplatform_mkpath(TZ_SYS_RW_APP, PACKAGE_NAME);
 #endif
 
 #define EXPORT __attribute__((visibility("default")))

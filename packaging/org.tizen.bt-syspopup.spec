@@ -32,6 +32,7 @@ BuildRequires:  pkgconfig(bluetooth-api)
 BuildRequires:  pkgconfig(feedback)
 BuildRequires:  sysman-internal-devel
 BuildRequires:  edje-tools
+BuildRequires:  pkgconfig(libtzplatform-config)
 
 BuildRequires:  cmake
 BuildRequires:  gettext-devel
@@ -57,6 +58,11 @@ cmake . \
     #eol
 
 make %{?jobs:-j%jobs}
+
+%cmake . \
+	-DTZ_SYS_RW_APP=%{TZ_SYS_RW_APP} \
+	-DTZ_SYS_SHARE=%{TZ_SYS_SHARE}
+make
 
 %install
 rm -rf %{buildroot}
