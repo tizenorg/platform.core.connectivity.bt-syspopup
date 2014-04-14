@@ -77,10 +77,10 @@ ${CMAKE_CURRENT_SOURCE_DIR}/data/custom_popup.edc
 ADD_DEPENDENCIES(${PROJECT_NAME} custom_popup.edj)
 
 
-INSTALL(TARGETS ${PROJECT_NAME} DESTINATION /opt/apps/org.tizen.bt-syspopup/bin)
+INSTALL(TARGETS ${PROJECT_NAME} DESTINATION ${TZ_SYS_RW_APP}/org.tizen.bt-syspopup/bin)
 
 # install desktop file & icon
 SET(PREFIX ${CMAKE_INSTALL_PREFIX})
 INSTALL(FILES ${CMAKE_BINARY_DIR}/data/org.tizen.bt-syspopup.xml DESTINATION /usr/share/packages/)
-INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/data/org.tizen.bt-syspopup.png DESTINATION /opt/share/icons/default/small)
-INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/data/custom_popup.edj DESTINATION /opt/apps/org.tizen.bt-syspopup/res/edje)
+INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/data/org.tizen.bt-syspopup.png DESTINATION ${TZ_SYS_SHARE}/icons/default/small)
+INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/data/custom_popup.edj DESTINATION ${TZ_SYS_RW_APP}/org.tizen.bt-syspopup/res/edje)
