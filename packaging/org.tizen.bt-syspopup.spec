@@ -1,9 +1,5 @@
 %bcond_with wayland
 
-%define _optdir /opt
-%define _usrdir /usr
-%define _appdir %{_optdir}/apps
-
 Name:       org.tizen.bt-syspopup
 Summary:    bluetooth system-popup application (bluetooth system popup)
 Version:    0.2.56
@@ -49,7 +45,7 @@ export CFLAGS+=" -fpie -fvisibility=hidden"
 export LDFLAGS+=" -Wl,--rpath=/usr/lib -Wl,--as-needed -Wl,--unresolved-symbols=ignore-in-shared-libs -pie"
 
 cmake . \
-    -DCMAKE_INSTALL_PREFIX=%{_appdir}/org.tizen.bt-syspopup \
+    -DCMAKE_INSTALL_PREFIX=%{TZ_SYS_RW_APP}/org.tizen.bt-syspopup \
 %if %{with wayland}
     -DWAYLAND_SUPPORT=On \
 %else
@@ -72,7 +68,7 @@ rm -rf %{buildroot}
 %files
 %manifest org.tizen.bt-syspopup.manifest
 %defattr(-,root,root,-)
-%{_usrdir}/share/packages/org.tizen.bt-syspopup.xml
-%{_appdir}/org.tizen.bt-syspopup/bin/bt-syspopup
-%{_appdir}/org.tizen.bt-syspopup/res/edje/*.edj
-%{_optdir}/share/icons/default/small/org.tizen.bt-syspopup.png
+%{TZ_SYS_RO_PACKAGES}/org.tizen.bt-syspopup.xml
+%{TZ_SYS_RW_APP}/org.tizen.bt-syspopup/bin/bt-syspopup
+%{TZ_SYS_RW_APP}/org.tizen.bt-syspopup/res/edje/*.edj
+%{TZ_SYS_SHARE}/icons/default/small/org.tizen.bt-syspopup.png
