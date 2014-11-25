@@ -5,7 +5,7 @@ Summary:    bluetooth system-popup application (bluetooth system popup)
 Version:    0.2.56
 Release:    0
 Group:      main
-License:    Flora Software License
+License:    Apache License, Version 2.0
 Source0:    %{name}-%{version}.tar.gz
 BuildRequires:  pkgconfig(evas)
 BuildRequires:  pkgconfig(ecore-input)
