@@ -1,34 +1,44 @@
+%define _usrdir /usr
+%define _appdir %{_usrdir}/apps
+
 %bcond_with wayland
 
 Name:       org.tizen.bt-syspopup
 Summary:    bluetooth system-popup application (bluetooth system popup)
-Version:    0.2.56
+Version:    0.3.1
 Release:    0
 Group:      main
 License:    Apache License, Version 2.0
 Source0:    %{name}-%{version}.tar.gz
 BuildRequires:  pkgconfig(evas)
+%if "%{?profile}" == "mobile"
+BuildRequires:  pkgconfig(efl-assist)
+BuildRequires:  pkgconfig(notification)
+%endif
+%if "%{?profile}" == "wearable"
+BuildRequires:  efl-assist-devel
+BuildRequires:  pkgconfig(syspopup-caller)
+%endif
 BuildRequires:  pkgconfig(ecore-input)
-BuildRequires:  pkgconfig(edbus)
 BuildRequires:  pkgconfig(ethumb)
 BuildRequires:  pkgconfig(elementary)
 BuildRequires:  pkgconfig(efreet)
-BuildRequires:  pkgconfig(sysman)
 BuildRequires:  pkgconfig(sensor)
-BuildRequires:  pkgconfig(appcore-efl)
-BuildRequires:  pkgconfig(devman)
 BuildRequires:  pkgconfig(syspopup)
 BuildRequires:  pkgconfig(dlog)
-BuildRequires:  pkgconfig(pmapi)
 BuildRequires:  pkgconfig(dbus-glib-1)
 BuildRequires:  pkgconfig(glib-2.0)
-BuildRequires:  pkgconfig(devman_haptic)
 BuildRequires:  pkgconfig(aul)
-BuildRequires:  pkgconfig(bluetooth-api)
+BuildRequires:  pkgconfig(edbus)
 BuildRequires:  pkgconfig(feedback)
-BuildRequires:  sysman-internal-devel
 BuildRequires:  edje-tools
 BuildRequires:  pkgconfig(libtzplatform-config)
+BuildRequires:  pkgconfig(capi-appfw-application)
+BuildRequires:  pkgconfig(capi-system-device)
+BuildRequires:  pkgconfig(capi-media-player)
+BuildRequires:  pkgconfig(deviced)
+BuildRequires:  pkgconfig(capi-network-bluetooth)
+BuildRequires:  pkgconfig(vconf)
 
 BuildRequires:  cmake
 BuildRequires:  gettext-devel
@@ -41,6 +51,15 @@ bluetooth system-popup application (bluetooth system popup).
 
 
 %build
+%if "%{?profile}" == "wearable"
+export CFLAGS="$CFLAGS -DTIZEN_ENGINEER_MODE -DTIZEN_WEARABLE"
+export CXXFLAGS="$CXXFLAGS -DTIZEN_ENGINEER_MODE"
+export FFLAGS="$FFLAGS -DTIZEN_ENGINEER_MODE"
+%else
+export CFLAGS="$CFLAGS -DTIZEN_DEBUG_ENABLE -DTIZEN_MOBILE"
+export CXXFLAGS="$CXXFLAGS -DTIZEN_DEBUG_ENABLE"
+export FFLAGS="$FFLAGS -DTIZEN_DEBUG_ENABLE"
+%endif
 export CFLAGS+=" -fpie -fvisibility=hidden"
 export LDFLAGS+=" -Wl,--rpath=/usr/lib -Wl,--as-needed -Wl,--unresolved-symbols=ignore-in-shared-libs -pie"
 
@@ -72,3 +91,7 @@ rm -rf %{buildroot}
 %{TZ_SYS_RW_APP}/org.tizen.bt-syspopup/bin/bt-syspopup
 %{TZ_SYS_RW_APP}/org.tizen.bt-syspopup/res/edje/*.edj
 %{TZ_SYS_SHARE}/icons/default/small/org.tizen.bt-syspopup.png
+%if "%{?profile}" == "wearable"
+/usr/apps/org.tizen.bt-syspopup/shared/res/tables/org.tizen.bt-syspopup_ChangeableColorTable.xml
+/usr/apps/org.tizen.bt-syspopup/shared/res/tables/org.tizen.bt-syspopup_FontInfoTable.xml
+%endif
