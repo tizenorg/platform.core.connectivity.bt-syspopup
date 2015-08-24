@@ -1011,12 +1011,13 @@ static void __bluetooth_draw_popup(struct bt_popup_appdata *ad,
 		BT_INFO("Title %s", title);
 		label = elm_label_add(scroller_layout);
 		elm_label_line_wrap_set(label, ELM_WRAP_MIXED);
+#if 0
 		ea_theme_color_get("AT012",&r, &g, &b, &a,
 			NULL, NULL, NULL, NULL,
 			NULL, NULL, NULL, NULL);
 		ea_theme_font_get("AT012", &font, &size);
 		BT_INFO("font : %s, size : %d", font, size);
-
+#endif
 		elm_object_part_content_set(scroller_layout, "elm.text.block", label);
 		evas_object_show(label);
 
@@ -1122,10 +1123,12 @@ static void __bluetooth_draw_loading_popup(struct bt_popup_appdata *ad,
 		evas_object_show(label);
 
 		txt = elm_entry_utf8_to_markup(title);
+#if 0
 		ea_theme_color_get("AT012",&r, &g, &b, &a,
 					NULL, NULL, NULL, NULL,
 					NULL, NULL, NULL, NULL);
 		ea_theme_font_get("AT012", &font, &size);
+#endif
 		buf = g_strdup_printf("<font=%s><font_size=%d><color=#%s>%s</color></font_size></font>",
 				font, size,
 				__bluetooth_convert_rgba_to_hex(r, g, b, a),
@@ -1459,6 +1462,7 @@ static void __bluetooth_draw_input_view(struct bt_popup_appdata *ad,
 	label = elm_label_add(layout);
 	elm_object_style_set(label, "popup/default");
 	elm_label_line_wrap_set(label, ELM_WRAP_CHAR);
+#if 0
 	ea_theme_color_get("AT012",&r, &g, &b, &a,
 				NULL, NULL, NULL, NULL,
 				NULL, NULL, NULL, NULL);
@@ -1466,6 +1470,7 @@ static void __bluetooth_draw_input_view(struct bt_popup_appdata *ad,
 		BT_INFO("font : %s, size : %d", font, size);
 	else
 		BT_INFO("ea_theme_font_get fail!");
+#endif
 	buf = g_strdup_printf("<font=%s><font_size=%d><color=#%s>%s</color></font_size></font>",
 			font, 28,
 			__bluetooth_convert_rgba_to_hex(r, g, b, a),
@@ -1950,9 +1955,11 @@ static void __bt_draw_toast_popup(struct bt_popup_appdata *ad, char *toast_text)
 	evas_object_show(ad->win_main);
 	elm_object_focus_set(ad->popup, EINA_TRUE);
 
+#if 0
 	ao = elm_object_part_access_object_get(ad->popup, "access.outline");
         if (ao != NULL)
 		elm_access_info_set(ao, ELM_ACCESS_INFO, toast_text);
+#endif
 }
 
 static void __bt_draw_error_toast_popup(struct bt_popup_appdata *ad, char *toast_text)
@@ -1972,9 +1979,11 @@ static void __bt_draw_error_toast_popup(struct bt_popup_appdata *ad, char *toast
 	evas_object_show(ad->win_main);
 	elm_object_focus_set(ad->popup, EINA_TRUE);
 
+#if 0
 	ao = elm_object_part_access_object_get(ad->popup, "access.outline");
         if (ao != NULL)
 		elm_access_info_set(ao, ELM_ACCESS_INFO, toast_text);
+#endif
 }
 
 static Eina_Bool __exit_idler_cb(void *data)
@@ -2075,6 +2084,8 @@ static void __bluetooth_session_init(struct bt_popup_appdata *ad)
 void __bluetooth_set_color_table(void *data)
 {
 	FN_START;
+
+#if 0
 	struct bt_popup_appdata *ad = (struct bt_popup_appdata *)data;
 
 	/* Set color table */
@@ -2090,7 +2101,7 @@ void __bluetooth_set_color_table(void *data)
 		BT_ERR("ea_theme_color_table_new failed!");
 	else if (EINA_TRUE != ea_theme_fonts_set(ad->font_table))
 		BT_ERR("ea_theme_fonts_set failed!");
-
+#endif
 	FN_END;
 }
 
@@ -2168,6 +2179,7 @@ static void __bluetooth_terminate(void *data)
 		ad->conn = NULL;
 	}
 
+#if 0
 	if (ad->color_table != NULL) {
 		ea_theme_color_table_free(ad->color_table);
 		ad->color_table = NULL;
@@ -2177,6 +2189,7 @@ static void __bluetooth_terminate(void *data)
 		ea_theme_font_table_free(ad->font_table);
 		ad->font_table = NULL;
 	}
+#endif
 
 	if (ad->popup)
 		evas_object_del(ad->popup);

@@ -246,8 +246,10 @@ struct bt_popup_appdata {
 	Evas_Object *edit_field_save_btn;
 	Evas_Object *ticker_noti;
 
+#if 0
 	Ea_Theme_Color_Table *color_table;
 	Ea_Theme_Font_Table *font_table;
+#endif
 
 	Ecore_Timer *timer;
 
