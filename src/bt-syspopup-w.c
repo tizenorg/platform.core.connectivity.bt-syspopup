@@ -218,7 +218,7 @@ static void __bluetooth_notify_event(feedback_pattern_e feedback)
 
 static gboolean __bluetooth_pairing_pattern_cb(gpointer data)
 {
-	__bluetooth_notify_event(FEEDBACK_PATTERN_BT_WAITING);
+	__bluetooth_notify_event(FEEDBACK_PATTERN_NONE);
 
 	return TRUE;
 }
@@ -2298,12 +2298,12 @@ DONE:
 			BT_ERR("Fail to change LCD");
 
 		if (ad->event_type == BT_EVENT_HANDSFREE_DISCONNECT_REQUEST) {
-			__bluetooth_notify_event(FEEDBACK_PATTERN_DISCONNECTED);
+			__bluetooth_notify_event(FEEDBACK_PATTERN_BT_DISCONNECTED);
 		} else if (ad->event_type == BT_EVENT_HANDSFREE_CONNECT_REQUEST) {
-			__bluetooth_notify_event(FEEDBACK_PATTERN_CONNECTED);
+			__bluetooth_notify_event(FEEDBACK_PATTERN_BT_CONNECTED);
 		} else if (ad->event_type == BT_EVENT_PASSKEY_CONFIRM_REQUEST ||
 			   ad->event_type == BT_EVENT_SYSTEM_RESET_REQUEST) {
-			__bluetooth_notify_event(FEEDBACK_PATTERN_BT_PAIRING);
+			__bluetooth_notify_event(FEEDBACK_PATTERN_NONE);
 			ad->viberation_id = g_timeout_add(BT_VIBERATION_INTERVAL,
 						  __bluetooth_pairing_pattern_cb, NULL);
 			__lock_display();
