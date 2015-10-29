@@ -25,7 +25,6 @@
 #include <dd-display.h>
 #include <app.h>
 #include <Ecore_X.h>
-#include <utilX.h>
 #include <vconf.h>
 #include <vconf-keys.h>
 #include <syspopup.h>
@@ -175,8 +174,12 @@ static void __bluetooth_set_win_level(Evas_Object *parent)
 		BT_DBG("Setting window type");
 		ecore_x_netwm_window_type_set(xwin,
 				ECORE_X_WINDOW_TYPE_NOTIFICATION);
+
+		/* utilx APIs are unnecessary in Tizen 3.x based on wayland */
+#if 0
 		utilx_set_system_notification_level(ecore_x_display_get(),
 				xwin, UTILX_NOTIFICATION_LEVEL_HIGH);
+#endif
 	}
 }
 

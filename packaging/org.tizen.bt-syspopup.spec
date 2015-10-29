@@ -38,7 +38,6 @@ BuildRequires:  pkgconfig(capi-system-device)
 BuildRequires:  pkgconfig(capi-media-player)
 BuildRequires:  pkgconfig(deviced)
 BuildRequires:  pkgconfig(capi-network-bluetooth)
-BuildRequires:  pkgconfig(utilX)
 BuildRequires:  pkgconfig(vconf)
 
 BuildRequires:  cmake
