@@ -43,6 +43,7 @@ pkg_check_modules(pkgs REQUIRED
 	aul
 	efl-assist
 	edbus
+	utilX
 	vconf)
 ELSEIF("$ENV{CFLAGS}" MATCHES "-DTIZEN_MOBILE")
 pkg_check_modules(pkgs REQUIRED
