@@ -172,11 +172,11 @@ static void __bluetooth_set_win_level(Evas_Object *parent)
 		BT_ERR("elm_win_xwindow_get is failed");
 	} else {
 		BT_DBG("Setting window type");
+#if 0
 		ecore_x_netwm_window_type_set(xwin,
 				ECORE_X_WINDOW_TYPE_NOTIFICATION);
 
 		/* utilx APIs are unnecessary in Tizen 3.x based on wayland */
-#if 0
 		utilx_set_system_notification_level(ecore_x_display_get(),
 				xwin, UTILX_NOTIFICATION_LEVEL_HIGH);
 #endif
@@ -735,6 +735,7 @@ static void __bluetooth_keyback_auth_cb(void *data,
 
 	BT_DBG("Keyboard event callback function is called + ");
 
+#if 0
 	if (!strcmp(ev->keyname, KEY_BACK)) {
 		evas_object_event_callback_del(obj, EVAS_CALLBACK_MOUSE_UP,
 				__bluetooth_mouseup_auth_cb);
@@ -752,6 +753,7 @@ static void __bluetooth_keyback_auth_cb(void *data,
 		dbus_message_unref(msg);
 		__bluetooth_win_del(ad);
 	}
+#endif
 	BT_DBG("Keyboard Mouse event callback -");
 }
 
@@ -935,6 +937,7 @@ static void __bluetooth_keyback_cb(void *data,
 
 	BT_INFO("Keyboard event callback function is called %s+ ", ev->keyname);
 
+#if 0
 	if (!strcmp(ev->keyname, KEY_BACK)) {
 
 		evas_object_event_callback_del(obj, EVAS_CALLBACK_MOUSE_UP,
@@ -943,6 +946,7 @@ static void __bluetooth_keyback_cb(void *data,
 				__bluetooth_keyback_cb);
 		__bluetooth_remove_all_event(ad);
 	}
+#endif
 	BT_DBG("Keyboard Mouse event callback -");
 }
 
@@ -1288,6 +1292,7 @@ static void __bluetooth_input_keyback_cb(void *data,
 
 	BT_DBG("Keyboard event callback function is called + ");
 
+#if 0
 	if (!strcmp(ev->keyname, KEY_BACK)) {
 		if (ad == NULL)
 			return;
@@ -1325,6 +1330,7 @@ static void __bluetooth_input_keyback_cb(void *data,
 		free(convert_input_text);
 		__bluetooth_win_del(ad);
 	}
+#endif
 	BT_DBG("Keyboard Mouse event callback -");
 }
 
@@ -2047,8 +2053,10 @@ static Evas_Object *__bluetooth_create_win(const char *name, void *data)
 		elm_win_alpha_set(eo, EINA_TRUE);
 		elm_win_title_set(eo, name);
 		elm_win_borderless_set(eo, EINA_TRUE);
+#if 0
 		ecore_x_window_size_get(ecore_x_window_root_first_get(),
 					&w, &h);
+#endif
 		evas_object_resize(eo, w, h);
 	}
 
