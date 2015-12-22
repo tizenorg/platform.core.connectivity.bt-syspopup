@@ -64,7 +64,7 @@ static void __bluetooth_terminate(void *data);
 
 static void __bluetooth_remove_all_event(struct bt_popup_appdata *ad);
 
-static void __bluetooth_set_win_level(Evas_Object *parent);
+//static void __bluetooth_set_win_level(Evas_Object *parent);
 
 static void __popup_terminate(void);
 
@@ -967,7 +967,7 @@ static void __bluetooth_draw_auth_popup(struct bt_popup_appdata *ad,
 	elm_object_style_set(ad->popup, "transparent");
 
 	/*set window level to HIGH*/
-	__bluetooth_set_win_level(ad->popup);
+//	__bluetooth_set_win_level(ad->popup);
 
 	layout = elm_layout_add(ad->popup);
 	elm_layout_file_set(layout, CUSTOM_POPUP_PATH, "auth_popup");
@@ -1082,7 +1082,7 @@ static void __bluetooth_draw_popup(struct bt_popup_appdata *ad,
 	elm_popup_align_set(ad->popup, ELM_NOTIFY_ALIGN_FILL, 1.0);
 
 	/*set window level to HIGH*/
-	__bluetooth_set_win_level(ad->popup);
+//	__bluetooth_set_win_level(ad->popup);
 
 #ifdef TIZEN_REDWOOD
 	elm_object_style_set(ad->popup, "transparent");
@@ -1499,7 +1499,7 @@ static void __bluetooth_draw_input_view(struct bt_popup_appdata *ad,
 	ad->popup = passpopup;
 
 	/*set window level to HIGH*/
-	__bluetooth_set_win_level(ad->popup);
+//	__bluetooth_set_win_level(ad->popup);
 
 	elm_object_part_text_set(passpopup, "title,text", title);
 
@@ -1630,7 +1630,7 @@ static void __bluetooth_draw_access_request_popup(struct bt_popup_appdata *ad,
 	elm_popup_align_set(ad->popup, ELM_NOTIFY_ALIGN_FILL, 1.0);
 
 	/*set window level to HIGH*/
-	__bluetooth_set_win_level(ad->popup);
+//	__bluetooth_set_win_level(ad->popup);
 
 	if (title != NULL) {
 		elm_object_part_text_set(ad->popup, "title,text", title);
@@ -1717,7 +1717,7 @@ static void __bluetooth_draw_information_popup(struct bt_popup_appdata *ad,
 	ea_object_event_callback_add(ad->popup, EA_CALLBACK_BACK, func, ad);
 
 	/*set window level to HIGH*/
-	__bluetooth_set_win_level(ad->popup);
+//	__bluetooth_set_win_level(ad->popup);
 
 	if (title)
 		elm_object_part_text_set(ad->popup, "title,text", title);
@@ -1784,7 +1784,7 @@ static void __bluetooth_draw_toast_popup(struct bt_popup_appdata *ad, char *toas
 	elm_object_part_text_set(ad->popup,"elm.text.content", toast_text);
 	evas_object_smart_callback_add(ad->popup, "block,clicked", __bluetooth_popup_block_clicked_cb, NULL);
 
-	__bluetooth_set_win_level(ad->popup);
+//	__bluetooth_set_win_level(ad->popup);
 
 	evas_object_show(ad->popup);
 	FN_END;
@@ -2150,6 +2150,8 @@ static void __bluetooth_win_del(void *data)
 	BT_DBG("+");
 }
 
+/* utilx and ecore_x APIs are unnecessary in Tizen 3.x based on wayland */
+#if 0
 static void __bluetooth_set_win_level(Evas_Object *parent)
 {
 	ret_if(!parent);
@@ -2161,30 +2163,27 @@ static void __bluetooth_set_win_level(Evas_Object *parent)
 		BT_ERR("elm_win_xwindow_get is failed");
 	} else {
 		BT_DBG("Setting window type");
-#if 0
 		ecore_x_netwm_window_type_set(xwin,
 				ECORE_X_WINDOW_TYPE_NOTIFICATION);
-#endif
 		if (vconf_get_int(VCONFKEY_IDLE_LOCK_STATE, &lock_state) != 0) {
 			BT_ERR("Fail to get the lock_state value");
 		}
 
-/*
-	Issue: Pairing request pop appears in the Lock screen when DUT is locked
-	and observed inconsistency. (TMWC-746)
-	In platform image, don't have the additional logic to handle this.
-	So just the set notification level as LOW.
-*/
-#if 0
+		/*
+		Issue: Pairing request pop appears in the Lock screen when DUT is locked
+		and observed inconsistency. (TMWC-746)
+		In platform image, don't have the additional logic to handle this.
+		So just the set notification level as LOW.
+		 */
 		if (lock_state == VCONFKEY_IDLE_UNLOCK) {
 			utilx_set_system_notification_level(ecore_x_display_get(),
 					xwin, UTILX_NOTIFICATION_LEVEL_HIGH);
 		} else
 			utilx_set_system_notification_level(ecore_x_display_get(),
 					xwin, UTILX_NOTIFICATION_LEVEL_LOW);
-#endif
 	}
 }
+#endif
 
 static Evas_Object *__bluetooth_create_win(const char *name)
 {
@@ -2249,9 +2248,9 @@ static void __bluetooth_vconf_change_cb(keynode_t *key, void *data)
 
 	char *vconf_name = vconf_keynode_get_name(key);
 
-	if (!g_strcmp0(vconf_name, VCONFKEY_IDLE_LOCK_STATE) &&
-		ad->popup)
-		__bluetooth_set_win_level(ad->popup);
+//	if (!g_strcmp0(vconf_name, VCONFKEY_IDLE_LOCK_STATE) &&
+//		ad->popup)
+//		__bluetooth_set_win_level(ad->popup);
 }
 
 static bool __bluetooth_create(void *data)

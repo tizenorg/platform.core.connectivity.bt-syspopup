@@ -24,7 +24,6 @@
 #include <stdio.h>
 #include <dd-display.h>
 #include <app.h>
-#include <Ecore_X.h>
 #include <vconf.h>
 #include <vconf-keys.h>
 #include <syspopup.h>
@@ -69,7 +68,7 @@ static struct _info {
 static void __bluetooth_delete_input_view(struct bt_popup_appdata *ad);
 static void __bluetooth_win_del(void *data);
 
-static void __bluetooth_set_win_level(Evas_Object *parent);
+//static void __bluetooth_set_win_level(Evas_Object *parent);
 
 static void __bluetooth_input_keyback_cb(void *data,
 			Evas *e, Evas_Object *obj, void *event_info);
@@ -164,6 +163,8 @@ static void __bluetooth_cleanup(struct bt_popup_appdata *ad)
 	BT_DBG("-");
 }
 
+/* utilx and ecore_x APIs are unnecessary in Tizen 3.x based on wayland */
+#if 0
 static void __bluetooth_set_win_level(Evas_Object *parent)
 {
 	Ecore_X_Window xwin;
@@ -172,16 +173,14 @@ static void __bluetooth_set_win_level(Evas_Object *parent)
 		BT_ERR("elm_win_xwindow_get is failed");
 	} else {
 		BT_DBG("Setting window type");
-#if 0
-		ecore_x_netwm_window_type_set(xwin,
-				ECORE_X_WINDOW_TYPE_NOTIFICATION);
+	ecore_x_netwm_window_type_set(xwin,
+			ECORE_X_WINDOW_TYPE_NOTIFICATION);
 
-		/* utilx APIs are unnecessary in Tizen 3.x based on wayland */
-		utilx_set_system_notification_level(ecore_x_display_get(),
-				xwin, UTILX_NOTIFICATION_LEVEL_HIGH);
-#endif
+	utilx_set_system_notification_level(ecore_x_display_get(),
+			xwin, UTILX_NOTIFICATION_LEVEL_HIGH);
 	}
 }
+#endif
 
 static void __lock_display()
 {
@@ -1091,7 +1090,7 @@ static void __bluetooth_draw_loading_popup(struct bt_popup_appdata *ad,
 	char *font;
 	int size;
 
-	__bluetooth_set_win_level(ad->win_main);
+//	__bluetooth_set_win_level(ad->win_main);
 
 	bg = elm_bg_add(ad->win_main);
 	evas_object_size_hint_weight_set(bg, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
@@ -1202,7 +1201,7 @@ static void __bluetooth_draw_text_popup(struct bt_popup_appdata *ad,
 	ea_object_event_callback_add(ad->popup, EA_CALLBACK_BACK,
 			ea_popup_back_cb, NULL);
 
-	__bluetooth_set_win_level(ad->popup);
+//	__bluetooth_set_win_level(ad->popup);
 	txt = elm_entry_utf8_to_markup(text);
 	elm_object_text_set(ad->popup, txt);
 	free(txt);
@@ -1956,7 +1955,7 @@ static void __bt_draw_toast_popup(struct bt_popup_appdata *ad, char *toast_text)
 
 	elm_object_part_text_set(ad->popup,"elm.text", toast_text);
 
-	__bluetooth_set_win_level(ad->popup);
+//	__bluetooth_set_win_level(ad->popup);
 
 	ecore_event_handler_add(ECORE_EVENT_MOUSE_BUTTON_UP, __bt_toast_mouseup_cb, ad);
 
@@ -1982,7 +1981,7 @@ static void __bt_draw_error_toast_popup(struct bt_popup_appdata *ad, char *toast
 	ea_object_event_callback_add(ad->popup, EA_CALLBACK_BACK, ea_popup_back_cb, NULL);
 	elm_object_part_text_set(ad->popup,"elm.text", toast_text);
 
-	__bluetooth_set_win_level(ad->popup);
+//	__bluetooth_set_win_level(ad->popup);
 
 	evas_object_show(ad->popup);
 	evas_object_show(ad->win_main);
