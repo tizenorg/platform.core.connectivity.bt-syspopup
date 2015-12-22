@@ -24,7 +24,6 @@
 #include <stdio.h>
 #include <dd-display.h>
 #include <app.h>
-#include <Ecore_X.h>
 #include <vconf.h>
 #include <vconf-keys.h>
 #include <syspopup.h>
