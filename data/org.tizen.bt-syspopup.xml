@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns="http://tizen.org/ns/packages" package="org.tizen.bt-syspopup" version="2.0.25" install-location="internal-only">
+<manifest xmlns="http://tizen.org/ns/packages" package="org.tizen.bt-syspopup" api-version="3.0" version="2.0.25" install-location="internal-only">
 	<label>Bluetooth System Popup</label>
 	<author email="dh79.pyun@samsung.com" href="www.samsung.com">DoHyun Pyun</author>
 	<description>Bluetooth System Popup</description>
