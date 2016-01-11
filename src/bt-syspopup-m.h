@@ -48,8 +48,8 @@
 
 #define CUSTOM_POPUP_PATH PREFIX"/res/edje/custom_popup.edj"
 
-#define BT_COMMON_PKG		"ug-bluetooth-efl"
-#define BT_LOCALEDIR		"/usr/apps/ug-bluetooth-efl/shared/res/locale"
+#define BT_COMMON_PKG		"ug-setting-bluetooth-efl"
+#define BT_LOCALEDIR		"/usr/ug/res/locale"
 
 #define _EDJ(obj) elm_layout_edje_get(obj)
 
