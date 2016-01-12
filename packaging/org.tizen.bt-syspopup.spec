@@ -59,7 +59,7 @@ export CFLAGS="$CFLAGS -DTIZEN_DEBUG_ENABLE -DTIZEN_MOBILE"
 export CXXFLAGS="$CXXFLAGS -DTIZEN_DEBUG_ENABLE"
 export FFLAGS="$FFLAGS -DTIZEN_DEBUG_ENABLE"
 %endif
-export CFLAGS+=" -fpie -fvisibility=hidden"
+export CFLAGS+=" -fpie -fvisibility=hidden -D__ENABLE_BLUEZ5__"
 export LDFLAGS+=" -Wl,--rpath=/usr/lib -Wl,--as-needed -Wl,--unresolved-symbols=ignore-in-shared-libs -pie"
 
 cmake . \
