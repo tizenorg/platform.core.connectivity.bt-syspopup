@@ -1749,13 +1749,8 @@ static void __bluetooth_delete_input_view(struct bt_popup_appdata *ad)
 static DBusGProxy* __bluetooth_create_agent_proxy(DBusGConnection *conn,
 								const char *path)
 {
-#ifdef __ENABLE_BLUEZ5__
 	return dbus_g_proxy_new_for_name(conn, "org.projectx.bt", path,
 							"org.bluez.Agent1");
-#else
-	return dbus_g_proxy_new_for_name(conn, "org.projectx.bt", path,
-							"org.bluez.Agent");
-#endif
 }
 
 static void
