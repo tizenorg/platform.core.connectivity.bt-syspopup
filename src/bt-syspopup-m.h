@@ -290,6 +290,7 @@ struct bt_popup_appdata {
 	bt_popup_event_type_t event_type;
 
 	player_h player;
+	sound_stream_info_h stream_info;
 	Ecore_Timer *playing_timer;
 };
 

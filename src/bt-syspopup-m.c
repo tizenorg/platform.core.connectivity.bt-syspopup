@@ -175,6 +175,10 @@ static void __bluetooth_player_free_job_cb(void *data)
 	player_h sound_player = data;
 	player_state_e state = PLAYER_STATE_NONE;
 
+	sound_stream_focus_state_e state_for_playback;
+	int ret = PLAYER_ERROR_NONE;
+	sound_stream_info_h stream_info = NULL;
+
 	retm_if(sound_player == NULL, "invalid parameter");
 
 	if (player_get_state(sound_player, &state) == PLAYER_ERROR_NONE) {
@@ -190,6 +194,19 @@ static void __bluetooth_player_free_job_cb(void *data)
 		}
 	}
 	player_destroy(sound_player);
+
+	ret = sound_manager_get_focus_state(stream_info, &state_for_playback, NULL);
+	if (state_for_playback == SOUND_STREAM_FOCUS_STATE_ACQUIRED)
+	{
+		ret = sound_manager_release_focus(stream_info, SOUND_STREAM_FOCUS_FOR_PLAYBACK, NULL);
+		if (ret != SOUND_MANAGER_ERROR_NONE)
+			BT_ERR("sound_manager_release_focus() get failed : %d", ret);
+	}
+
+	ret = sound_manager_destroy_stream_information(stream_info);
+	if (ret != SOUND_MANAGER_ERROR_NONE)
+		BT_ERR("sound_manager_destroy_stream_information() get failed : %d", ret);
+
 	FN_END;
 }
 
@@ -227,12 +244,10 @@ __bluetooth_player_completed_cb(void *user_data)
 }
 
 static void
-__bluetooth_player_interrupted_cb(player_interrupted_code_e code, void *user_data)
+__bluetooth_sound_stream_focus_state_changed_cb(sound_stream_info_h stream_info, sound_stream_focus_change_reason_e reason_for_change, const char *additional_info, void *user_data)
 {
 	retm_if(user_data == NULL, "invalid parameter");
 	struct bt_popup_appdata *ad = user_data;
-
-	BT_ERR("interrupt code [%d]", (int)code);
 
 	__bluetooth_player_del_timeout_timer(ad);
 	__bluetooth_player_free(ad->player);
@@ -286,8 +301,8 @@ static int __bluetooth_notify_event(struct bt_popup_appdata *ad)
 	retvm_if(!ad, PLAYER_ERROR_INVALID_PARAMETER, "invalid parameter");
 	int result;
 	char *path = NULL;
-	sound_session_type_e type = 1;
 	player_state_e state = PLAYER_STATE_NONE;
+	sound_stream_info_h *stream_info = &ad->stream_info;
 
 	int ret = PLAYER_ERROR_NONE;
 	int sndRet = SOUND_MANAGER_ERROR_NONE;
@@ -299,26 +314,35 @@ static int __bluetooth_notify_event(struct bt_popup_appdata *ad)
 	if (ad->player != NULL)
 		__bluetooth_player_free(ad->player);
 
-	sound_manager_get_session_type(&type);
-	if (type != SOUND_SESSION_TYPE_NOTIFICATION) {
-		sndRet = sound_manager_set_session_type(SOUND_SESSION_TYPE_NOTIFICATION);
-		if(sndRet != SOUND_MANAGER_ERROR_NONE) {
-			BT_ERR("sound_manager_set_session_type fail");
-			return PLAYER_ERROR_INVALID_PARAMETER;
+	if (*stream_info != NULL) {
+		sndRet = sound_manager_destroy_stream_information(*stream_info);
+		if (sndRet != SOUND_MANAGER_ERROR_NONE) {
+			BT_ERR("sound_manager_destroy_stream_information() get failed : %x", ret);
 		}
+	}
+
+	sndRet = sound_manager_create_stream_information(SOUND_STREAM_TYPE_NOTIFICATION, __bluetooth_sound_stream_focus_state_changed_cb, (void*)(&ad->player), stream_info);
+	if (sndRet != SOUND_MANAGER_ERROR_NONE) {
+		BT_ERR("sound_manager_create_stream_information() get failed :%x", sndRet);
+		return PLAYER_ERROR_INVALID_PARAMETER;
+	}
+
+	sndRet = sound_manager_set_focus_reacquisition(*stream_info, false);
+	if (sndRet != SOUND_MANAGER_ERROR_NONE) {
+		BT_ERR("sound_manager_set_focus_reacquisition() set failed : %d", ret);
+		return sndRet;
+	}
+
+	sndRet = sound_manager_acquire_focus(*stream_info, SOUND_STREAM_FOCUS_FOR_PLAYBACK, NULL);
+	if (sndRet != SOUND_MANAGER_ERROR_NONE) {
+		BT_ERR("sound_manager_acquire_focus() get failed : %d", ret);
+		return sndRet;
 	}
 
 	ret = player_create(&ad->player);
 	if (ret != PLAYER_ERROR_NONE) {
 		BT_ERR("creating the player handle failed[%d]", ret);
 		ad->player= NULL;
-		return ret;
-	}
-
-	ret = player_set_sound_type(ad->player, SOUND_TYPE_NOTIFICATION);
-	if (ret != PLAYER_ERROR_NONE) {
-		BT_ERR("player_set_sound_type() ERR: %x!!!!", ret);
-		__bluetooth_player_free(ad->player);
 		return ret;
 	}
 
@@ -342,6 +366,17 @@ static int __bluetooth_notify_event(struct bt_popup_appdata *ad)
 		return ret;
 	}
 
+	if (*stream_info != NULL) {
+		ret = player_set_audio_policy_info(ad->player, *stream_info);
+		if (ret != PLAYER_ERROR_NONE) {
+			BT_ERR("player_set_audio_policy_info failed : %d", ret);
+			__bluetooth_player_free(ad->player);
+			return ret;
+		}
+	}
+
+
+
 	ret = player_prepare(ad->player);
 	if (ret != PLAYER_ERROR_NONE) {
 		BT_ERR("realizing the player handle failed[%d]", ret);
@@ -360,12 +395,6 @@ static int __bluetooth_notify_event(struct bt_popup_appdata *ad)
 	ret = player_set_completed_cb(ad->player, __bluetooth_player_completed_cb, ad);
 	if (ret != PLAYER_ERROR_NONE) {
 		BT_ERR("player_set_completed_cb() ERR: %x!!!!", ret);
-		__bluetooth_player_free(ad->player);
-		return ret;
-	}
-
-	ret = player_set_interrupted_cb(ad->player, __bluetooth_player_interrupted_cb, ad);
-	if (ret != PLAYER_ERROR_NONE) {
 		__bluetooth_player_free(ad->player);
 		return ret;
 	}
