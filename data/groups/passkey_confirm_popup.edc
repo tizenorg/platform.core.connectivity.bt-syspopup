@@ -161,3 +161,89 @@ group { name: "passkey_confirm_popup_scroller";
 		}
 	}
 }
+
+group { name: "elm/button/base/custom_focus_style";
+	data {
+		item: "focus_highlight" "on";
+	}
+	images {
+		image: image_normal COMP;
+	}
+	script {
+		public mouse_down = 0;
+		public multi_down = 0;
+	}
+	parts {
+		part { name: "elm.swallow.content";
+			   type: SWALLOW;
+			   scale: 1;
+			   description { state: "default" 0.0;
+	   }
+		}
+		part { name: "over2";
+			  type: RECT;
+			  repeat_events: 1;
+			  ignore_flags: ON_HOLD;
+			  description { state: "default" 0.0;
+							color: 0 0 0 0;
+			  }
+		}
+		part { name: "over3";
+				type: RECT;
+				repeat_events: 1;
+				description { state: "default" 0.0;
+				color: 0 0 0 0;
+			   }
+		}
+	}
+	programs {
+		program { name: "button_press";
+					signal: "mouse,down,1*";
+					source: "over2";
+					script {
+						if ((get_int(multi_down) == 0) && (get_int(mouse_down) == 0))
+						{
+							set_int(mouse_down, 1);
+							emit("elm,action,press", "");
+						}
+					}
+		}
+		program { name: "button_unpress";
+					signal: "mouse,up,1*";
+					source: "over3";
+					script {
+						if (get_int(mouse_down) == 1)
+						{
+							set_int(mouse_down, 0);
+							emit("elm,action,unpress", "");
+						}
+					}
+		}
+		program { name: "button_click";
+				signal: "mouse,clicked,1";
+				source: "over2";
+				script {
+					if (get_int(multi_down) == 0) {
+						emit("elm,action,click", "");
+					}
+				}
+		}
+		program {
+					name: "multi_down";
+					signal: "elm,action,multi,down";
+					source: "elm";
+					script {
+						set_int(multi_down, 1);
+					}
+		}
+		program {
+				name: "multi_up";
+				signal: "elm,action,multi,up";
+				source: "elm";
+				script {
+					set_int(multi_down, 0);
+				}
+		}
+	}
+}
+

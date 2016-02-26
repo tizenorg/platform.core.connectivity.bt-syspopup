@@ -1430,6 +1430,7 @@ static void __bluetooth_draw_input_view(struct bt_popup_appdata *ad,
 	Evas_Object *default_ly = NULL;
 	Evas_Object *scroller;
 	Elm_Object_Item *navi_item;
+	Elm_Theme *th;
 	static	char *buf;
 	int i = 0, r = 0, g = 0, b = 0, a = 0;
 	char *font;
@@ -1503,6 +1504,10 @@ static void __bluetooth_draw_input_view(struct bt_popup_appdata *ad,
 	elm_object_part_content_set(ad->ly_pass, "sw.keypad", layout_key);
 	elm_object_part_text_set(layout_key, "confirm", "OK");
 
+	th = elm_theme_new();
+	elm_theme_ref_set(th, NULL);
+	elm_theme_extension_add(th, CUSTOM_POPUP_PATH);
+
 	for (i = 0; i< 12; i++) {
 		Evas_Object *button = elm_button_add(layout_key);
 		char buf[32] = {0,};
@@ -1510,7 +1515,8 @@ static void __bluetooth_draw_input_view(struct bt_popup_appdata *ad,
 			BT_DBG("elm_button_add() failed");
 			continue;
 		}
-		elm_object_style_set(button, "focus");
+		elm_object_theme_set(button, th);
+		elm_object_style_set(button, "custom_focus_style");
 		snprintf(buf, sizeof(buf)-1, "%s,sw", keypad_info[i].part_name);
 		elm_object_part_content_set(layout_key, buf, button);
 		elm_access_info_set(button, ELM_ACCESS_INFO, keypad_info[i].tts_name);
@@ -1519,6 +1525,9 @@ static void __bluetooth_draw_input_view(struct bt_popup_appdata *ad,
 				__bt_keypad_clicked_cb, ad);
 		keypad_info[i].tts_button = button;
 	}
+
+	elm_theme_extension_del(th, CUSTOM_POPUP_PATH);
+	elm_theme_free(th);
 
 	navi_item = elm_naviframe_item_push(naviframe, BT_STR_PAIRING_REQUEST,
 			NULL, NULL, layout, NULL);
