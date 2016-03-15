@@ -34,7 +34,7 @@
 #include <feedback.h>
 #include "bt-syspopup-m.h"
 #include <notification.h>
-#include <bundle_internal.h>
+#include <bundle.h>
 #include <app_control.h>
 #include <app_control_internal.h>
 #include <efl_assist.h>
@@ -1828,6 +1828,7 @@ static int __bluetooth_launch_handler(struct bt_popup_appdata *ad,
 	const char *file = NULL;
 	const char *agent_path;
 	char *conv_str = NULL;
+	int ret;
 
 	if (!reset_data || !event_type)
 		return -1;
@@ -1835,8 +1836,13 @@ static int __bluetooth_launch_handler(struct bt_popup_appdata *ad,
 	BT_INFO("Event Type = %s[0X%X]", event_type, ad->event_type);
 
 	if (!strcasecmp(event_type, "pin-request")) {
-		device_name = bundle_get_val(kb, "device-name");
-		agent_path = bundle_get_val(kb, "agent-path");
+		ret = bundle_get_str(kb, "device-name", &device_name);
+		if (ret != BUNDLE_ERROR_NONE)
+			BT_ERR("bundle_get_str() is failed : %d\n", ret);
+
+		ret = bundle_get_str(kb, "agent-path", &agent_paath);
+		if (ret != BUNDLE_ERROR_NONE)
+			BT_ERR("bundle_get_str() is failed : %d\n", ret);
 
 		ad->agent_proxy = __bluetooth_create_agent_proxy(ad->conn, agent_path);
 		retv_if(!ad->agent_proxy, -1);
@@ -1857,9 +1863,18 @@ static int __bluetooth_launch_handler(struct bt_popup_appdata *ad,
 		__bluetooth_draw_input_view(ad, view_title, text,
 					  __bluetooth_input_request_cb);
 	} else if (!strcasecmp(event_type, "passkey-confirm-request")) {
-		device_name = bundle_get_val(kb, "device-name");
-		passkey = bundle_get_val(kb, "passkey");
-		agent_path = bundle_get_val(kb, "agent-path");
+		ret = bundle_get_str(kb, "device-name", &device_name);
+		if (ret != BUNDLE_ERROR_NONE)
+			BT_ERR("bundle_get_str() is failed : %d\n", ret);
+
+		ret = bundle_get_str(kb, "passkey", &passkey);
+		if (ret != BUNDLE_ERROR_NONE)
+			BT_ERR("bundle_get_str() is failed : %d\n", ret);
+
+		ret = bundle_get_str(kb, "agent-path", &agent_path);
+		if (ret != BUNDLE_ERROR_NONE)
+			BT_ERR("bundle_get_str() is failed : %d\n", ret);
+
 
 		ad->agent_proxy = __bluetooth_create_agent_proxy(ad->conn, agent_path);
 		if (!ad->agent_proxy)
@@ -1882,8 +1897,13 @@ static int __bluetooth_launch_handler(struct bt_popup_appdata *ad,
 	} else if (!strcasecmp(event_type, "passkey-request")) {
 		const char *device_name = NULL;
 
-		device_name = bundle_get_val(kb, "device-name");
-		agent_path = bundle_get_val(kb, "agent-path");
+		ret = bundle_get_str(kb, "device-name", &device_name);
+		if (ret != BUNDLE_ERROR_NONE)
+			BT_ERR("bundle_get_str() is failed : %d\n", ret);
+
+		ret = bundle_get_str(kb, "agent-path", &agent_path);
+		if (ret != BUNDLE_ERROR_NONE)
+			BT_ERR("bundle_get_str() is failed : %d\n", ret);
 
 		ad->agent_proxy = __bluetooth_create_agent_proxy(ad->conn, agent_path);
 		if (!ad->agent_proxy)
@@ -1906,8 +1926,13 @@ static int __bluetooth_launch_handler(struct bt_popup_appdata *ad,
 					  __bluetooth_input_request_cb);
 
 	} else if (!strcasecmp(event_type, "passkey-display-request")) {
-		device_name = bundle_get_val(kb, "device-name");
-		passkey = bundle_get_val(kb, "passkey");
+		ret = bundle_get_str(kb, "device-name", &device_name);
+		if (ret != BUNDLE_ERROR_NONE)
+			BT_ERR("bundle_get_str() is failed : %d\n", ret);
+
+		ret = bundle_get_str(kb, "passkey", &passkey);
+		if (ret != BUNDLE_ERROR_NONE)
+			BT_ERR("bundle_get_str() is failed : %d\n", ret);
 
 		if (device_name && passkey) {
 
@@ -1925,8 +1950,13 @@ static int __bluetooth_launch_handler(struct bt_popup_appdata *ad,
 	} else if (!strcasecmp(event_type, "authorize-request")) {
 		timeout = BT_AUTHORIZATION_TIMEOUT;
 
-		device_name = bundle_get_val(kb, "device-name");
-		agent_path = bundle_get_val(kb, "agent-path");
+		ret = bundle_get_str(kb, "device-name", &device_name);
+		if (ret != BUNDLE_ERROR_NONE)
+			BT_ERR("bundle_get_str() is failed : %d\n", ret);
+
+		ret = bundle_get_str(kb, "agent-path", &agent_path);
+		if (ret != BUNDLE_ERROR_NONE)
+			BT_ERR("bundle_get_str() is failed : %d\n", ret);
 
 		ad->agent_proxy = __bluetooth_create_agent_proxy(ad->conn, agent_path);
 		if (!ad->agent_proxy)
@@ -1950,8 +1980,13 @@ static int __bluetooth_launch_handler(struct bt_popup_appdata *ad,
 		const char *title = NULL;
 		const char *type = NULL;
 
-		title = bundle_get_val(kb, "title");
-		type = bundle_get_val(kb, "type");
+		ret = bundle_get_str(kb, "title", &title);
+		if (ret != BUNDLE_ERROR_NONE)
+			BT_ERR("bundle_get_str() is failed : %d\n", ret);
+
+		ret = bundle_get_str(kb, "type", &type);
+		if (ret != BUNDLE_ERROR_NONE)
+			BT_ERR("bundle_get_str() is failed : %d\n", ret);
 
 		if (!title)
 			return -1;
@@ -1971,8 +2006,13 @@ static int __bluetooth_launch_handler(struct bt_popup_appdata *ad,
 	} else if (!strcasecmp(event_type, "push-authorize-request")) {
 		timeout = BT_AUTHORIZATION_TIMEOUT;
 
-		device_name = bundle_get_val(kb, "device-name");
-		file = bundle_get_val(kb, "file");
+		ret = bundle_get_str(kb, "device-name", &device_name);
+		if (ret != BUNDLE_ERROR_NONE)
+			BT_ERR("bundle_get_str() is failed : %d\n", ret);
+
+		ret = bundle_get_str(kb, "file", &file);
+		if (ret != BUNDLE_ERROR_NONE)
+			BT_ERR("bundle_get_str() is failed : %d\n", ret);
 
 		if (device_name) {
 			snprintf(view_title, BT_TITLE_STR_MAX_LEN,
@@ -1984,7 +2024,9 @@ static int __bluetooth_launch_handler(struct bt_popup_appdata *ad,
 	} else if (!strcasecmp(event_type, "confirm-overwrite-request")) {
 		timeout = BT_AUTHORIZATION_TIMEOUT;
 
-		file = bundle_get_val(kb, "file");
+		ret = bundle_get_str(kb, "file", &file);
+		if (ret != BUNDLE_ERROR_NONE)
+			BT_ERR("bundle_get_str() is failed : %d\n", ret);
 
 		snprintf(view_title, BT_TITLE_STR_MAX_LEN,
 			 BT_STR_OVERWRITE_FILE_Q, file);
@@ -1993,8 +2035,14 @@ static int __bluetooth_launch_handler(struct bt_popup_appdata *ad,
 				BT_STR_CANCEL, BT_STR_OK,
 				__bluetooth_app_confirm_cb);
 	} else if (!strcasecmp(event_type, "keyboard-passkey-request")) {
-		device_name = bundle_get_val(kb, "device-name");
-		passkey = bundle_get_val(kb, "passkey");
+		ret = bundle_get_str(kb, "device-name", &device_name);
+		if (ret != BUNDLE_ERROR_NONE)
+			BT_ERR("bundle_get_str() is failed : %d\n", ret);
+
+		ret = bundle_get_str(kb, "passkey", &passkey);
+		if (ret != BUNDLE_ERROR_NONE)
+			BT_ERR("bundle_get_str() is failed : %d\n", ret);
+
 
 		if (device_name && passkey) {
 			snprintf(view_title, BT_TITLE_STR_MAX_LEN,
@@ -2016,8 +2064,13 @@ static int __bluetooth_launch_handler(struct bt_popup_appdata *ad,
 		const char *title = NULL;
 		const char *type = NULL;
 
-		title = bundle_get_val(kb, "title");
-		type = bundle_get_val(kb, "type");
+		ret = bundle_get_str(kb, "title", &title);
+		if (ret != BUNDLE_ERROR_NONE)
+			BT_ERR("bundle_get_str() is failed : %d\n", ret);
+
+		ret = bundle_get_str(kb, "type", &type);
+		if (ret != BUNDLE_ERROR_NONE)
+			BT_ERR("bundle_get_str() is failed : %d\n", ret);
 
 		if (title != NULL) {
 			if (strlen(title) > 255)
@@ -2035,8 +2088,13 @@ static int __bluetooth_launch_handler(struct bt_popup_appdata *ad,
 	} else if (!strcasecmp(event_type, "exchange-request")) {
 		timeout = BT_AUTHORIZATION_TIMEOUT;
 
-		device_name = bundle_get_val(kb, "device-name");
-		agent_path = bundle_get_val(kb, "agent-path");
+		ret = bundle_get_str(kb, "device-name", &device_name);
+		if (ret != BUNDLE_ERROR_NONE)
+			BT_ERR("bundle_get_str() is failed : %d\n", ret);
+
+		ret = bundle_get_str(kb, "agent-path", &agent_path);
+		if (ret != BUNDLE_ERROR_NONE)
+			BT_ERR("bundle_get_str() is failed : %d\n", ret);
 
 		ad->agent_proxy = __bluetooth_create_agent_proxy(ad->conn, agent_path);
 		if (!ad->agent_proxy)
@@ -2053,8 +2111,14 @@ static int __bluetooth_launch_handler(struct bt_popup_appdata *ad,
 	} else if (!strcasecmp(event_type, "phonebook-request")) {
 		timeout = BT_AUTHORIZATION_TIMEOUT;
 
-		device_name = bundle_get_val(kb, "device-name");
-		agent_path = bundle_get_val(kb, "agent-path");
+		ret = bundle_get_str(kb, "device-name", &device_name);
+		if (ret != BUNDLE_ERROR_NONE)
+			BT_ERR("bundle_get_str() is failed : %d\n", ret);
+
+		ret = bundle_get_str(kb, "agent-path", &agent_path);
+		if (ret != BUNDLE_ERROR_NONE)
+			BT_ERR("bundle_get_str() is failed : %d\n", ret);
+
 
 		ad->agent_proxy = __bluetooth_create_agent_proxy(ad->conn, agent_path);
 		if (!ad->agent_proxy)
@@ -2085,8 +2149,13 @@ static int __bluetooth_launch_handler(struct bt_popup_appdata *ad,
 	} else if (!strcasecmp(event_type, "message-request")) {
 		timeout = BT_AUTHORIZATION_TIMEOUT;
 
-		device_name = bundle_get_val(kb, "device-name");
-		agent_path = bundle_get_val(kb, "agent-path");
+		ret = bundle_get_str(kb, "device-name", &device_name);
+		if (ret != BUNDLE_ERROR_NONE)
+			BT_ERR("bundle_get_str() is failed : %d\n", ret);
+
+		ret = bundle_get_str(kb, "agent-path", &agent_path);
+		if (ret != BUNDLE_ERROR_NONE)
+			BT_ERR("bundle_get_str() is failed : %d\n", ret);
 
 		ad->agent_proxy = __bluetooth_create_agent_proxy(ad->conn, agent_path);
 		if (!ad->agent_proxy)
@@ -2116,7 +2185,10 @@ static int __bluetooth_launch_handler(struct bt_popup_appdata *ad,
 #endif
 	} else if (!strcasecmp(event_type, "pairing-retry-request")) {
 		int ret;
-		device_name = bundle_get_val(kb, "device-name");
+		ret = bundle_get_str(kb, "device-name", &device_name);
+		if (ret != BUNDLE_ERROR_NONE)
+			BT_ERR("bundle_get_str() is failed : %d\n", ret);
+
 		if (device_name)
 			conv_str = elm_entry_utf8_to_markup(device_name);
 		snprintf(view_title, BT_TITLE_STR_MAX_LEN,
@@ -2130,7 +2202,9 @@ static int __bluetooth_launch_handler(struct bt_popup_appdata *ad,
 			BT_ERR("notification_status_message_post() is failed : %d\n", ret);
 	} else if (!strcasecmp(event_type, "remote-legacy-pair-failed")) {
 		BT_DBG("remote-legacy-pair-failed");
-		device_name = bundle_get_val(kb, "device-name");
+		ret = bundle_get_str(kb, "device-name", &device_name);
+		if (ret != BUNDLE_ERROR_NONE)
+			BT_ERR("bundle_get_str() is failed : %d\n", ret);
 
 		if (device_name)
 			conv_str = elm_entry_utf8_to_markup(device_name);
@@ -2387,7 +2461,11 @@ static void __bluetooth_reset(app_control_h app_control, void *data)
 		return;
 	}
 	/* Start Main UI */
-	event_type = bundle_get_val(b, "event-type");
+	ret = bundle_get_str(b, "event-type", &event_type);
+	if (ret != BUNDLE_ERROR_NONE)
+		BT_ERR("bundle_get_str() is failed : %d\n", ret);
+
+
 	BT_DBG("event-type: %s", event_type);
 
 	if (event_type != NULL) {
