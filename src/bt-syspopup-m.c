@@ -145,8 +145,8 @@ static void __bt_main_win_rot_changed_cb(void *data, Evas_Object *obj,
 	if (ad->popup) {
 		if (ad->event_type == BT_EVENT_PIN_REQUEST ||
 				ad->event_type == BT_EVENT_PASSKEY_CONFIRM_REQUEST){
-			if (ad->rotation == APP_DEVICE_ORIENTATION_0 ||
-					ad->rotation == APP_DEVICE_ORIENTATION_180)
+			if (ad->rotation == BT_ROTATE_0 ||
+					ad->rotation == BT_ROTATE_180)
 				elm_layout_file_set(elm_object_content_get(ad->popup),
 						CUSTOM_POPUP_PATH, "passwd_popup");
 			else
@@ -299,7 +299,6 @@ static int __bluetooth_notify_event(struct bt_popup_appdata *ad)
 {
 	FN_START;
 	retvm_if(!ad, PLAYER_ERROR_INVALID_PARAMETER, "invalid parameter");
-	int result;
 	char *path = NULL;
 	player_state_e state = PLAYER_STATE_NONE;
 	sound_stream_info_h *stream_info = &ad->stream_info;
@@ -408,6 +407,7 @@ static int __bluetooth_notify_event(struct bt_popup_appdata *ad)
 	ecore_job_add(__bluetooth_player_start_job_cb, ad);
 
 	FN_END;
+	return ret;
 }
 
 static void __bluetooth_parse_event(struct bt_popup_appdata *ad, const char *event_type)
@@ -851,7 +851,6 @@ static void __bluetooth_entry_change_cb(void *data, Evas_Object *obj,
 	struct bt_popup_appdata *ad = (struct bt_popup_appdata *)data;
 	char *input_text = NULL;
 	char *convert_input_text = NULL;
-	char *output_text = NULL;
 	int text_length = 0;
 
 	input_text = (char *)elm_entry_entry_get(obj);
@@ -947,10 +946,12 @@ static void __bluetooth_mouseup_auth_cb(void *data,
 static void __bluetooth_keyback_auth_cb(void *data,
 			Evas *e, Evas_Object *obj, void *event_info)
 {
+#if 0
 	Evas_Event_Key_Down *ev = event_info;
 	struct bt_popup_appdata *ad = data;
 	DBusMessage *msg = NULL;
 	int response = BT_AGENT_REJECT;
+#endif
 
 	BT_DBG("Keyboard event callback function is called + ");
 
@@ -1081,7 +1082,9 @@ static void __bluetooth_keyback_cb(void *data,
 			Evas *e, Evas_Object *obj, void *event_info)
 {
 	Evas_Event_Key_Down *ev = event_info;
+#if 0
 	struct bt_popup_appdata *ad = data;
+#endif
 
 	BT_DBG("Keyboard event callback function is called %s+ ", ev->keyname);
 #if 0
@@ -1217,13 +1220,13 @@ static void __bluetooth_input_keyback_cb(void *data,
 			Evas *e, Evas_Object *obj, void *event_info)
 {
 	FN_START;
+#if 0
 	Evas_Event_Key_Down *ev = event_info;
 	struct bt_popup_appdata *ad = data;
 	int response = BT_AGENT_CANCEL;
 	char *input_text = NULL;
 	char *convert_input_text = NULL;
 
-#if 0
 	if (!strcmp(ev->keyname, KEY_BACK)) {
 		if (ad == NULL)
 			return;
@@ -1343,7 +1346,6 @@ static Evas_Object *__bluetooth_passwd_entry_icon_get(
 
 	Evas_Object *entry = NULL;
 	Evas_Object *layout = NULL;
-	Evas_Object *button = NULL;
 	struct bt_popup_appdata *ad = data;
 	static Elm_Entry_Filter_Limit_Size limit_filter_data;
 
@@ -1504,17 +1506,10 @@ static void __bluetooth_draw_input_view(struct bt_popup_appdata *ad,
 			(void *data, Evas_Object *obj, void *event_info))
 {
 	FN_START;
-	Evas_Object *conformant = NULL;
-	Evas_Object *content = NULL;
 	Evas_Object *layout = NULL;
 	Evas_Object *passpopup = NULL;
-	Evas_Object *label = NULL;
-	Evas_Object *entry = NULL;
-	Evas_Object *check = NULL;
 	Evas_Object *l_button = NULL;
 	Evas_Object *r_button = NULL;
-	Ecore_IMF_Context *imf_context;
-	static Elm_Entry_Filter_Limit_Size limit_filter_data;
 	Evas_Object *genlist = NULL;
 	Elm_Object_Item *git = NULL;
 
@@ -1645,7 +1640,6 @@ static void __bluetooth_draw_access_request_popup(struct bt_popup_appdata *ad,
 			char *btn2_text, void (*func) (void *data,
 			Evas_Object *obj, void *event_info))
 {
-	char temp_str[BT_TITLE_STR_MAX_LEN + BT_TEXT_EXTRA_LEN] = { 0 };
 	Evas_Object *layout = NULL;
 	Evas_Object *btn1 = NULL;
 	Evas_Object *btn2 = NULL;
@@ -1790,14 +1784,6 @@ __bluetooth_popup_block_clicked_cb(void *data, Evas_Object *obj, void *event_inf
 		evas_object_del(obj);
 }
 
-static void
-__bluetooth_popup_timeout_cb(void *data, Evas_Object *obj, void *event_info)
-{
-	FN_START;
-	if(obj)
-		evas_object_del(obj);
-}
-
 static void __bluetooth_draw_toast_popup(struct bt_popup_appdata *ad, char *toast_text)
 {
 	FN_START;
@@ -1854,7 +1840,7 @@ static int __bluetooth_launch_handler(struct bt_popup_appdata *ad,
 			 "%s", BT_STR_BLUETOOTH_PAIRING_REQUEST);
 
 		snprintf(text, BT_GLOBALIZATION_STR_LENGTH,
-			 BT_STR_ENTER_THE_PIN_TO_PAIR, conv_str);
+			"%s%s", BT_STR_ENTER_THE_PIN_TO_PAIR, conv_str);
 
 		if (conv_str)
 			free(conv_str);
@@ -1883,7 +1869,7 @@ static int __bluetooth_launch_handler(struct bt_popup_appdata *ad,
 		if (device_name && passkey) {
 
 			snprintf(view_title, BT_TITLE_STR_MAX_LEN,
-				BT_STR_CONFIRM_PASSKEY_PS_TO_PAIR_WITH_PS,
+				"%s%s%s", BT_STR_CONFIRM_PASSKEY_PS_TO_PAIR_WITH_PS,
 				passkey, device_name);
 
 			BT_INFO("title: %s", view_title);
@@ -1916,7 +1902,7 @@ static int __bluetooth_launch_handler(struct bt_popup_appdata *ad,
 			 "%s", BT_STR_BLUETOOTH_PAIRING_REQUEST);
 
 		snprintf(text, BT_GLOBALIZATION_STR_LENGTH,
-			 BT_STR_ENTER_THE_PIN_TO_PAIR, conv_str);
+			 "%s%s", BT_STR_ENTER_THE_PIN_TO_PAIR, conv_str);
 
 		if (conv_str)
 			free(conv_str);
@@ -1937,7 +1923,7 @@ static int __bluetooth_launch_handler(struct bt_popup_appdata *ad,
 		if (device_name && passkey) {
 
 			snprintf(view_title, BT_TITLE_STR_MAX_LEN,
-			     BT_STR_ENTER_PS_ON_PS_TO_PAIR, passkey, device_name);
+			     "%s%s%s", BT_STR_ENTER_PS_ON_PS_TO_PAIR, passkey, device_name);
 
 			BT_INFO("title: %s", view_title);
 
@@ -1966,7 +1952,7 @@ static int __bluetooth_launch_handler(struct bt_popup_appdata *ad,
 			conv_str = elm_entry_utf8_to_markup(device_name);
 
 		snprintf(view_title, BT_TITLE_STR_MAX_LEN,
-			 BT_STR_ALLOW_PS_TO_CONNECT_Q, conv_str);
+			 "%s%s", BT_STR_ALLOW_PS_TO_CONNECT_Q, conv_str);
 
 		if (conv_str)
 			free(conv_str);
@@ -2016,7 +2002,7 @@ static int __bluetooth_launch_handler(struct bt_popup_appdata *ad,
 
 		if (device_name) {
 			snprintf(view_title, BT_TITLE_STR_MAX_LEN,
-					BT_STR_RECEIVE_PS_FROM_PS_Q, file, device_name);
+					"%s%s%s", BT_STR_RECEIVE_PS_FROM_PS_Q, file, device_name);
 		}
 
 		__bluetooth_draw_popup(ad, BT_STR_RECEIVE_FILE, view_title, BT_STR_CANCEL, BT_STR_OK,
@@ -2029,7 +2015,7 @@ static int __bluetooth_launch_handler(struct bt_popup_appdata *ad,
 			BT_ERR("bundle_get_str() is failed : %d\n", ret);
 
 		snprintf(view_title, BT_TITLE_STR_MAX_LEN,
-			 BT_STR_OVERWRITE_FILE_Q, file);
+			 "%s%s", BT_STR_OVERWRITE_FILE_Q, file);
 
 		__bluetooth_draw_popup(ad, BT_STR_RECEIVE_FILE, view_title,
 				BT_STR_CANCEL, BT_STR_OK,
@@ -2046,7 +2032,7 @@ static int __bluetooth_launch_handler(struct bt_popup_appdata *ad,
 
 		if (device_name && passkey) {
 			snprintf(view_title, BT_TITLE_STR_MAX_LEN,
-				BT_STR_ENTER_PS_ON_PS_TO_PAIR, passkey, device_name);
+				"%s%s%s", BT_STR_ENTER_PS_ON_PS_TO_PAIR, passkey, device_name);
 
 			BT_INFO("title: %s", view_title);
 
@@ -2102,7 +2088,7 @@ static int __bluetooth_launch_handler(struct bt_popup_appdata *ad,
 
 		if (device_name) {
 			snprintf(view_title, BT_TITLE_STR_MAX_LEN,
-					BT_STR_WANTS_TO_SEND_YOU_A_FILE, device_name);
+					"%s%s", BT_STR_WANTS_TO_SEND_YOU_A_FILE, device_name);
 		}
 
 		__bluetooth_draw_popup(ad, BT_STR_RECEIVE_FILE,
@@ -2129,10 +2115,10 @@ static int __bluetooth_launch_handler(struct bt_popup_appdata *ad,
 
 #ifdef TIZEN_REDWOOD
 		snprintf(view_title, BT_TITLE_STR_MAX_LEN,
-			 BT_STR_ALLOW_PS_PHONEBOOK_ACCESS_Q, conv_str);
+			 "%s%s", BT_STR_ALLOW_PS_PHONEBOOK_ACCESS_Q, conv_str);
 #else
 		snprintf(view_title, BT_TITLE_STR_MAX_LEN,
-				BT_STR_PS_CONTACT_REQUEST, conv_str);
+				"%s%s", BT_STR_PS_CONTACT_REQUEST, conv_str);
 #endif
 
 		if (conv_str)
@@ -2166,10 +2152,10 @@ static int __bluetooth_launch_handler(struct bt_popup_appdata *ad,
 
 #ifdef TIZEN_REDWOOD
 		snprintf(view_title, BT_TITLE_STR_MAX_LEN,
-			BT_STR_ALLOW_PS_TO_ACCESS_MESSAGES_Q, conv_str);
+			"%s%s", BT_STR_ALLOW_PS_TO_ACCESS_MESSAGES_Q, conv_str);
 #else
 		snprintf(view_title, BT_TITLE_STR_MAX_LEN,
-			BT_STR_PS_MESSAGE_REQUEST, conv_str);
+			"%s%s", BT_STR_PS_MESSAGE_REQUEST, conv_str);
 #endif
 
 		if (conv_str)
@@ -2192,7 +2178,7 @@ static int __bluetooth_launch_handler(struct bt_popup_appdata *ad,
 		if (device_name)
 			conv_str = elm_entry_utf8_to_markup(device_name);
 		snprintf(view_title, BT_TITLE_STR_MAX_LEN,
-			 BT_STR_UNABLE_TO_PAIR, conv_str);
+			 "%s%s", BT_STR_UNABLE_TO_PAIR, conv_str);
 
 		if (conv_str)
 			free(conv_str);
@@ -2209,7 +2195,7 @@ static int __bluetooth_launch_handler(struct bt_popup_appdata *ad,
 		if (device_name)
 			conv_str = elm_entry_utf8_to_markup(device_name);
 		snprintf(text, BT_GLOBALIZATION_STR_LENGTH,
-			 BT_STR_UNABLE_TO_PAIR, conv_str);
+			 "%s%s", BT_STR_UNABLE_TO_PAIR, conv_str);
 		if (conv_str)
 			free(conv_str);
 
@@ -2311,7 +2297,9 @@ static void __bluetooth_session_init(struct bt_popup_appdata *ad)
 	DBusGConnection *conn = NULL;
 	GError *err = NULL;
 
+#if 0
 	g_type_init();
+#endif
 
 	conn = dbus_g_bus_get(DBUS_BUS_SYSTEM, &err);
 
@@ -2339,13 +2327,14 @@ static void __bluetooth_vconf_change_cb(keynode_t *key, void *data)
 {
 	retm_if(NULL == key, "key is NULL");
 	retm_if(NULL == data, "data is NULL");
+#if 0
 	struct bt_popup_appdata *ad = data;
-
 	char *vconf_name = vconf_keynode_get_name(key);
 
-//	if (!g_strcmp0(vconf_name, VCONFKEY_IDLE_LOCK_STATE) &&
-//		ad->popup)
-//		__bluetooth_set_win_level(ad->popup);
+	if (!g_strcmp0(vconf_name, VCONFKEY_IDLE_LOCK_STATE) &&
+		ad->popup)
+		__bluetooth_set_win_level(ad->popup);
+#endif
 }
 
 static bool __bluetooth_create(void *data)
