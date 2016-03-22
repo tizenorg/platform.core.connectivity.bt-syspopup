@@ -75,7 +75,7 @@ FOREACH(flag ${pkgs_CFLAGS})
 ENDFOREACH(flag)
 #SET(EXTRA_CFLAGS "${EXTRA_CFLAGS} -finstrument-functions")
 
-SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_CFLAGS} -fPIC -Werror")
+SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_CFLAGS} -fPIC -Wall -Werror")
 SET(CMAKE_C_FLAGS_DEBUG "-O0 -g ")
 SET(CMAKE_C_FLAGS_RELEASE "-O2")
 #This is flag for Gprof

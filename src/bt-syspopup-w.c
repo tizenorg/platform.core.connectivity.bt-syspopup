@@ -528,8 +528,6 @@ static void __bluetooth_passkey_confirm_cb(void *data,
 
 static void __bluetooth_reset_cb(void *data, Evas_Object *obj, void *event_info)
 {
-	DBusMessage *message = NULL;
-	DBusConnection *conn = NULL;
 	int reset = 0;
 
 	if (obj == NULL || data == NULL)
@@ -730,7 +728,6 @@ static void __bluetooth_keyback_auth_cb(void *data,
 	Evas_Event_Key_Down *ev = event_info;
 	struct bt_popup_appdata *ad = data;
 	DBusMessage *msg = NULL;
-	int response = BT_AGENT_REJECT;
 
 	BT_DBG("Keyboard event callback function is called + ");
 
