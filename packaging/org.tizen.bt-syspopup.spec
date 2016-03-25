@@ -63,7 +63,7 @@ export CFLAGS+=" -fpie -fvisibility=hidden"
 export LDFLAGS+=" -Wl,--rpath=/usr/lib -Wl,--as-needed -Wl,--unresolved-symbols=ignore-in-shared-libs -pie"
 
 cmake . \
-    -DCMAKE_INSTALL_PREFIX=%{TZ_SYS_RW_APP}/org.tizen.bt-syspopup \
+    -DCMAKE_INSTALL_PREFIX=%{TZ_SYS_RO_APP}/org.tizen.bt-syspopup \
 %if %{with wayland}
     -DWAYLAND_SUPPORT=On \
 %else
@@ -74,7 +74,7 @@ cmake . \
 make %{?jobs:-j%jobs}
 
 %cmake . \
-	-DTZ_SYS_RW_APP=%{TZ_SYS_RW_APP} \
+	-DTZ_SYS_RO_APP=%{TZ_SYS_RO_APP} \
 	-DTZ_SYS_SHARE=%{TZ_SYS_SHARE}
 make
 
@@ -87,8 +87,8 @@ rm -rf %{buildroot}
 %manifest org.tizen.bt-syspopup.manifest
 %defattr(-,root,root,-)
 %{TZ_SYS_RO_PACKAGES}/org.tizen.bt-syspopup.xml
-%{TZ_SYS_RW_APP}/org.tizen.bt-syspopup/bin/bt-syspopup
-%{TZ_SYS_RW_APP}/org.tizen.bt-syspopup/res/edje/*.edj
+%{TZ_SYS_RO_APP}/org.tizen.bt-syspopup/bin/bt-syspopup
+%{TZ_SYS_RO_APP}/org.tizen.bt-syspopup/res/edje/*.edj
 %{TZ_SYS_SHARE}/icons/default/small/org.tizen.bt-syspopup.png
 %if "%{?profile}" == "wearable"
 /usr/apps/org.tizen.bt-syspopup/shared/res/tables/org.tizen.bt-syspopup_ChangeableColorTable.xml
