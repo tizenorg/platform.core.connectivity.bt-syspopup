@@ -12,7 +12,7 @@ License:    Apache License, Version 2.0
 Source0:    %{name}-%{version}.tar.gz
 BuildRequires:  pkgconfig(evas)
 %if "%{?profile}" == "wearable"
-BuildRequires:  efl-assist-devel
+BuildRequires:  pkgconfig(efl-extension)
 BuildRequires:  pkgconfig(syspopup-caller)
 %else
 BuildRequires:  pkgconfig(efl-assist)

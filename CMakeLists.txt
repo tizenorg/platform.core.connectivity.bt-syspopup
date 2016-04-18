@@ -41,8 +41,9 @@ pkg_check_modules(pkgs REQUIRED
 	capi-network-bluetooth
 	feedback
 	aul
-	efl-assist
 	edbus
+	efl-extension
+	capi-system-device
 	vconf)
 ELSEIF("$ENV{CFLAGS}" MATCHES "-DTIZEN_MOBILE")
 pkg_check_modules(pkgs REQUIRED

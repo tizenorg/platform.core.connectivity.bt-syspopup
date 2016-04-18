@@ -3,10 +3,6 @@
 *
 * Copyright 2013 Samsung Electronics Co., Ltd
 *
-* Contact: Hocheol Seo <hocheol.seo@samsung.com>
-*           GirishAshok Joshi <girish.joshi@samsung.com>
-*           DoHyun Pyun <dh79.pyun@samsung.com>
-*
 * Licensed under the Flora License, Version 1.1 (the "License");
 * you may not use this file except in compliance with the License.
 * You may obtain a copy of the License at
@@ -28,9 +24,10 @@
 #include <dlog.h>
 #include <glib.h>
 #include <dbus/dbus-glib.h>
+#include <efl_extension.h>
 
 #ifndef PACKAGE_NAME
-#define PACKAGE_NAME "org.tizen.bt-syspopup"
+#define PACKAGE_NAME "org.tizen..bt-syspopup"
 #endif
 
 #ifndef PREFIX
@@ -48,8 +45,8 @@
 #define CUSTOM_POPUP_PATH PREFIX"/res/edje/custom_popup.edj"
 #define POPUP_IMAGE_PATH PREFIX"/res/images"
 
-#define BT_COMMON_PKG		"bluetooth"
-#define BT_LOCALEDIR		"/usr/apps/org.tizen.bluetooth/shared/res/locale"
+#define BT_COMMON_PKG		"bt-connection-popup"
+#define BT_LOCALEDIR		"/usr/apps/org.tizen.bt-connection-popup/res/locale"
 
 #define _EDJ(obj) elm_layout_edje_get(obj)
 
@@ -77,7 +74,7 @@
 
 #define BT_MESSAGE_STRING_SIZE 256*2+1
 
-#define BT_VIBERATION_INTERVAL 2000
+#define BT_VIBRATION_INTERVAL 2000
 
 #undef LOG_TAG
 #define LOG_TAG "BLUETOOTH_SYSPOPUP"
@@ -127,25 +124,11 @@
 #define BT_SYS_POPUP_METHOD_RESET_RESPONSE "ResetResponse"
 
 /* String defines to support multi-languages */
-#define BT_STR_ENTER_PIN	\
-	dgettext(BT_COMMON_PKG, "IDS_BT_HEADER_ENTERPIN")
 #define BT_STR_ALLOW_PS_TO_CONNECT_Q	\
 	dgettext(BT_COMMON_PKG, "IDS_BT_POP_ALLOW_PS_TO_CONNECT_Q")
 
-#define BT_STR_RECEIVE_PS_FROM_PS_Q \
-	dgettext(BT_COMMON_PKG, "IDS_BT_POP_RECEIVE_PS_FROM_PS_Q")
-
-#define BT_STR_PASSKEY_MATCH_Q \
-	dgettext(BT_COMMON_PKG, "IDS_BT_POP_MATCH_PASSKEYS_ON_PS_Q")
-
-#define BT_STR_OVERWRITE_FILE_Q \
-	dgettext(BT_COMMON_PKG, "IDS_BT_POP_PS_ALREADY_EXISTS_OVERWRITE_Q")
-
 #define BT_STR_ENTER_PS_ON_PS_TO_PAIR \
 	dgettext(BT_COMMON_PKG, "IDS_BT_BODY_ENTER_P1SS_ON_P2SS_TO_PAIR_THEN_TAP_RETURN_OR_ENTER")
-
-#define BT_STR_RECEIVE_FILE_FROM_PS_Q \
-	dgettext(BT_COMMON_PKG, "IDS_BT_POP_RECEIVE_FILE_FROM_PS_Q")
 
 /* Need to convert the design ID */
 #define BT_STR_PAIRING_REQUEST \
@@ -154,50 +137,45 @@
 #define BT_STR_ENTER_PIN_TO_PAIR \
 	dgettext(BT_COMMON_PKG, "IDS_BT_POP_ENTER_PIN_TO_PAIR_WITH_PS_HTRY_0000_OR_1234")
 
-#define BT_STR_SHOW_PASSWORD \
-	dgettext(BT_COMMON_PKG, "IDS_BT_BODY_SHOW_PASSWORD")
+#define BT_STR_ENTER_PIN_TO_PAIR_WITH_PS \
+	dgettext(BT_COMMON_PKG, "IDS_BT_POP_ENTER_PIN_TO_PAIR_WITH_PS")
 
 #define BT_STR_CONFIRM_PASSKEY_PS_TO_PAIR_WITH_PS \
 	dgettext(BT_COMMON_PKG, "IDS_BT_POP_CONFIRM_PASSKEY_IS_P2SS_TO_PAIR_WITH_P1SS")
 
-#define BT_STR_ALLOW_PS_PHONEBOOK_ACCESS_Q \
-	dgettext(BT_COMMON_PKG, "IDS_BT_BODY_ALLOW_PS_PHONEBOOK_ACCESS")
-
-#define BT_STR_ALLOW_PS_TO_ACCESS_MESSAGES_Q \
-	dgettext(BT_COMMON_PKG, "IDS_BT_POP_ALLOW_PS_TO_ACCESS_MESSAGES_Q")
-
-#define BT_STR_DONT_ASK_AGAIN \
-	dgettext(BT_COMMON_PKG, "IDS_BT_BODY_DONT_ASK_AGAIN")
+#define BT_STR_ALWAYS_ALLOW \
+	dgettext(BT_COMMON_PKG, "WDS_ST_OPT_ALWAYS_ALLOW")
 
 #define BT_STR_UNABLE_TO_CONNECT \
 	dgettext(BT_COMMON_PKG, "IDS_BT_POP_UNABLE_TO_CONNECT")
 
-#define BT_STR_TIMEOUT_TRY_AGAIN_Q \
-	dgettext(BT_COMMON_PKG, "IDS_BT_POP_PAIRRETRY")
-
-#define BT_STR_BLUETOOTH_ERROR_TRY_AGAIN_Q \
-	dgettext(BT_COMMON_PKG, "IDS_BT_POP_BLUETOOTH_ERROR_TRY_AGAIN_Q")
-#define BT_STR_TAP_TO_ENTER \
-	dgettext(BT_COMMON_PKG, "IDS_SIM_BODY_TAP_TO_ENTER_ABB")
-
-#define BT_STR_OK dgettext(BT_COMMON_PKG, "IDS_BT_BUTTON_OK_ABB")
-#define BT_STR_CANCEL dgettext(BT_COMMON_PKG, "IDS_BT_BUTTON_CANCEL")
+#define BT_STR_OK dgettext(BT_COMMON_PKG, "WDS_ST_BUTTON_OK_ABB")
+#define BT_STR_CANCEL dgettext(BT_COMMON_PKG, "WDS_ST_BUTTON_CANCEL")
 
 #define BT_STR_BLUETOOTH_CONNECTED \
-	dgettext(BT_COMMON_PKG, "IDS_BT_POP_BLUETOOTH_CONNECTED")
-#define BT_STR_BLUETOOTH_HAS_BEEN_DISCONNECTED \
-	dgettext(BT_COMMON_PKG, "IDS_BT_POP_BLUETOOTH_HAS_BEEN_DISCONNECTED")
-#define BT_STR_AUTO_CONNECT \
-	dgettext(BT_COMMON_PKG, "IDS_BT_POP_CONNECTING_TO_BLUETOOTH_STEREO_HEADSET_ING")
+	dgettext(BT_COMMON_PKG, "WDS_ST_SBODY_CONNECTED_M_STATUS_ABB")
+#define BT_STR_BLUETOOTH_DISCONNECTED \
+	dgettext(BT_COMMON_PKG, "WDS_WIFI_SBODY_DISCONNECTED_M_STATUS")
+#define BT_STR_CONNECTING \
+	dgettext(BT_COMMON_PKG, "IDS_BT_BODY_CONNECTING")
 
 #define BT_STR_TITLE_CONNECT dgettext(BT_COMMON_PKG, "IDS_BT_HEADER_CONNECT")
 
-#define BT_STR_FACTORY_RESET \
-	dgettext(BT_COMMON_PKG, "IDS_WMGR_BODY_PS_IS_ATTEMPTING_TO_CONNECT_TO_YOUR_GEAR_TO_CONNECT_TO_PS_THE_GEAR_WILL_BE_RESET_TO_ITS_FACTORY_SETTINGS")
+#define BT_STR_RESET \
+	dgettext(BT_COMMON_PKG, "WDS_ST_TPOP_PS_IS_ATTEMPTING_TO_CONNECT_TO_GEAR_TO_CONNECT_RESET_GEAR_AND_TRY_AGAIN")
 
-#define BT_STR_RESET dgettext(BT_COMMON_PKG, "IDS_ST_BUTTON_RESET_ABB2")
+#define BT_STR_GEAR_WILL_CONNECT_WITH_PS \
+	dgettext(BT_COMMON_PKG, "WDS_STU_BODY_GEAR_WILL_CONNECT_WITH_PS")
+
+#define BT_STR_PASSKEY \
+	dgettext(BT_COMMON_PKG, "WDS_STU_BODY_PASSKEY_C")
 
 #define BT_STR_PIN_LENGTH_ERROR "Pin must contain no more than %d digits"
+
+#define BT_STR_ENTER_PIN \
+	dgettext(BT_COMMON_PKG, "WDS_ST_HEADER_ENTER_PIN_ABB")
+
+
 typedef enum {
 	BT_CHANGED_MODE_ENABLE,
 	BT_CHANGED_MODE_DISABLE,
@@ -220,10 +198,9 @@ typedef enum {
 	BT_EVENT_PHONEBOOK_REQUEST = 0x2000,
 	BT_EVENT_MESSAGE_REQUEST = 0x4000,
 	BT_EVENT_UNABLE_TO_PAIRING = 0x8000,
-	BT_EVENT_HANDSFREE_CONNECT_REQUEST = 0x1100,
-	BT_EVENT_HANDSFREE_DISCONNECT_REQUEST = 0x1200,
 	BT_EVENT_HANDSFREE_AUTO_CONNECT_REQUEST = 0x1600,
 	BT_EVENT_SYSTEM_RESET_REQUEST = 0x10000,
+	BT_EVENT_PASSKEY_AUTO_ACCEPTED = 0x20000,
 } bt_popup_event_type_t;
 
 typedef enum {
@@ -234,6 +211,28 @@ typedef enum {
 	BT_AGENT_ACCEPT_ALWAYS,
 } bt_agent_accept_type_t;
 
+struct _bt_pincode_input_object {
+	char *input_guide_text;
+	char *input_text;
+	char *pincode;
+	Evas_Object *win_main;
+	Evas_Object *bg;
+	Evas_Object *entry;
+	Evas_Object *conformant;
+	Evas_Object *naviframe;
+	Evas_Object *layout_main;
+	Evas_Object *layout_keypad;
+	Evas_Object *editfield;
+	Evas_Object *editfield_keypad;
+	Eext_Circle_Surface *circle_surface;
+	Evas_Object *genlist;
+	Evas_Object *circle_genlist;
+	Evas_Object *ok_btn;
+	Elm_Object_Item *naviframe_item;
+	Elm_Genlist_Item_Class *pairing_editfield_itc;
+};
+typedef struct _bt_pincode_input_object bt_pincode_input_object;
+
 struct bt_popup_appdata {
 	Evas *evas;
 	Evas_Object *win_main;
@@ -242,7 +241,6 @@ struct bt_popup_appdata {
 	Evas_Object *ly_keypad;
 
 	/* Passkey layout objects */
-	Evas_Object *entry;
 	Evas_Object *edit_field_save_btn;
 	Evas_Object *ticker_noti;
 
@@ -259,9 +257,9 @@ struct bt_popup_appdata {
 	DBusGConnection *conn;
 
 	int changed_mode;
-	gboolean make_trusted;
-	guint viberation_id;
 	bt_popup_event_type_t event_type;
+	Evas_Object *popup_check;
+	bt_pincode_input_object *po;
 };
 
 #endif				/* __DEF_BT_SYSPOPUP_H_ */
