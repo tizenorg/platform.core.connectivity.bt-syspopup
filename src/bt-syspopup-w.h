@@ -27,7 +27,7 @@
 #include <efl_extension.h>
 
 #ifndef PACKAGE_NAME
-#define PACKAGE_NAME "org.tizen..bt-syspopup"
+#define PACKAGE_NAME "org.tizen.bt-syspopup"
 #endif
 
 #ifndef PREFIX
@@ -45,8 +45,8 @@
 #define CUSTOM_POPUP_PATH PREFIX"/res/edje/custom_popup.edj"
 #define POPUP_IMAGE_PATH PREFIX"/res/images"
 
-#define BT_COMMON_PKG		"bt-connection-popup"
-#define BT_LOCALEDIR		"/usr/apps/org.tizen.bt-connection-popup/res/locale"
+#define BT_COMMON_PKG		"bluetooth"
+#define BT_LOCALEDIR		"/usr/apps/org.tizen.bluetooth/res/locale"
 
 #define _EDJ(obj) elm_layout_edje_get(obj)
 
