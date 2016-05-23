@@ -32,20 +32,18 @@
 #include <dbus/dbus-glib-lowlevel.h>
 #include <syspopup_caller.h>
 #include <dd-display.h>
+#include <bundle.h>
+#include <bundle_internal.h>
+#include <app_control_internal.h>
 
 #define COLOR_TABLE "/usr/apps/org.tizen.bt-syspopup/shared/res/tables/com.samsung.bt-syspopup_ChangeableColorTable.xml"
 #define FONT_TABLE "/usr/apps/org.tizen.bt-syspopup/shared/res/tables/com.samsung.bt-syspopup_FontInfoTable.xml"
 
-static void __bluetooth_delete_input_view(struct bt_popup_appdata *ad);
 static void __bluetooth_win_del(void *data);
 
 static void __bluetooth_set_win_level(Evas_Object *parent);
 
 static void __bluetooth_terminate(void *data);
-
-static int __bluetooth_error_toast_timeout_cb(void *data);
-
-static void __bluetooth_draw_error_toast_popup(struct bt_popup_appdata *ad, char *toast_text);
 
 static void __bluetooth_draw_toast_popup(struct bt_popup_appdata *ad, char *toast_text);
 
@@ -972,6 +970,7 @@ static void __bluetooth_draw_text_popup_no_button(struct bt_popup_appdata *ad,
 	Evas_Object *layout = NULL;
 	char *text1 = NULL;
 	char *text2 = NULL;
+	char *smtp_str = NULL;
 
 	ret_if(!ad);
 
@@ -993,7 +992,9 @@ static void __bluetooth_draw_text_popup_no_button(struct bt_popup_appdata *ad,
 	elm_layout_file_set(layout, CUSTOM_POPUP_PATH, "no_button_passkey_confirm_popup");
 	elm_object_content_set(ad->popup, layout);
 
-	text1 = g_strdup_printf(BT_STR_GEAR_WILL_CONNECT_WITH_PS, device_name);
+	smtp_str = BT_STR_GEAR_WILL_CONNECT_WITH_PS;
+
+	text1 = g_strdup_printf(smtp_str, device_name);
 	text2 = g_strdup_printf("%s %s", BT_STR_PASSKEY, passkey);
 
 	elm_object_part_text_set(layout, "elm.text1", text1);
@@ -1302,9 +1303,11 @@ static char *__bluetooth_gl_pairing_description_label_get(void *data, Evas_Objec
 	retv_if(!data, NULL);
 	char *dev_name = (char *)data;
 	char temp[100] = {'\0',};
-
+	char *stms_str = NULL;
+	
 	if (!strcmp(part, "elm.text")) {
-		snprintf(temp, sizeof(temp) - 1, BT_STR_ENTER_PIN_TO_PAIR_WITH_PS, dev_name);
+		stms_str = BT_STR_ENTER_PIN_TO_PAIR_WITH_PS;
+		snprintf(temp, sizeof(temp) - 1, stms_str, dev_name);
 		return g_strdup_printf("<align=center>%s</align>", temp);
 	}
 	return NULL;
@@ -1570,11 +1573,6 @@ static void __bluetooth_draw_input_view(struct bt_popup_appdata *ad,
 	FN_END;
 }
 
-static void __bluetooth_delete_input_view(struct bt_popup_appdata *ad)
-{
-	__bluetooth_ime_hide();
-}
-
 static DBusGProxy* __bluetooth_create_agent_proxy(DBusGConnection *conn,
 								const char *path)
 {
@@ -1601,6 +1599,7 @@ static int __bluetooth_launch_handler(struct bt_popup_appdata *ad,
 	const char *passkey = NULL;
 	const char *agent_path;
 	char *conv_str = NULL;
+	char *stms_str = NULL;
 
 	if (!kb) {
 		BT_ERR("Bundle is NULL");
@@ -1640,8 +1639,8 @@ static int __bluetooth_launch_handler(struct bt_popup_appdata *ad,
 		if (device_name && passkey) {
 			conv_str = elm_entry_utf8_to_markup(device_name);
 
-			snprintf(view_title, BT_TITLE_STR_MAX_LEN,
-			     BT_STR_CONFIRM_PASSKEY_PS_TO_PAIR_WITH_PS,
+			stms_str = BT_STR_CONFIRM_PASSKEY_PS_TO_PAIR_WITH_PS;
+			snprintf(view_title, BT_TITLE_STR_MAX_LEN, stms_str,
 			     conv_str, passkey);
 			if (conv_str)
 				free(conv_str);
@@ -1705,8 +1704,9 @@ static int __bluetooth_launch_handler(struct bt_popup_appdata *ad,
 		snprintf(view_title, BT_TITLE_STR_MAX_LEN,
 			 "%s", BT_STR_PAIRING_REQUEST);
 
+		stms_str = BT_STR_ENTER_PIN_TO_PAIR;
 		snprintf(text, BT_GLOBALIZATION_STR_LENGTH,
-			 BT_STR_ENTER_PIN_TO_PAIR, conv_str);
+			 stms_str, conv_str);
 
 		/* Request user inputted Passkey for basic pairing */
 		__bluetooth_draw_input_view(ad, view_title, conv_str);
@@ -1723,8 +1723,9 @@ static int __bluetooth_launch_handler(struct bt_popup_appdata *ad,
 		if (device_name && passkey) {
 			conv_str = elm_entry_utf8_to_markup(device_name);
 
+			stms_str = BT_STR_ENTER_PS_ON_PS_TO_PAIR;
 			snprintf(view_title, BT_TITLE_STR_MAX_LEN,
-			     BT_STR_ENTER_PS_ON_PS_TO_PAIR, passkey, conv_str);
+			     stms_str, passkey, conv_str);
 
 			if (conv_str)
 				free(conv_str);
@@ -1750,8 +1751,9 @@ static int __bluetooth_launch_handler(struct bt_popup_appdata *ad,
 		if (device_name)
 			conv_str = elm_entry_utf8_to_markup(device_name);
 
+		stms_str = BT_STR_ALLOW_PS_TO_CONNECT_Q;
 		snprintf(view_title, BT_TITLE_STR_MAX_LEN,
-				BT_STR_ALLOW_PS_TO_CONNECT_Q, conv_str);
+				stms_str, conv_str);
 
 		if (conv_str)
 			free(conv_str);
@@ -1767,8 +1769,9 @@ static int __bluetooth_launch_handler(struct bt_popup_appdata *ad,
 		if (device_name && passkey) {
 			conv_str = elm_entry_utf8_to_markup(device_name);
 
+			stms_str = BT_STR_ENTER_PS_ON_PS_TO_PAIR;
 			snprintf(view_title, BT_TITLE_STR_MAX_LEN,
-			     BT_STR_ENTER_PS_ON_PS_TO_PAIR, passkey, conv_str);
+			     stms_str, passkey, conv_str);
 
 			if (conv_str)
 				free(conv_str);
@@ -1800,8 +1803,9 @@ static int __bluetooth_launch_handler(struct bt_popup_appdata *ad,
 			return -1;
 
 		if (device_name) {
+			stms_str = BT_STR_RESET;
 			snprintf(view_title, BT_TITLE_STR_MAX_LEN,
-					BT_STR_RESET, device_name, device_name);
+					stms_str, device_name, device_name);
 			__bluetooth_draw_reset_popup(ad, view_title,
 					__bluetooth_reset_cb);
 		} else {
@@ -1825,15 +1829,8 @@ static int __bluetooth_launch_handler(struct bt_popup_appdata *ad,
 	return 0;
 }
 
-static void __bluetooth_timeout_cb(void *data, Evas_Object *obj, void *event_info)
-{
-	evas_object_del(obj);
-}
-
 static void __bluetooth_draw_toast_popup(struct bt_popup_appdata *ad, char *toast_text)
 {
-	Evas_Object *ao = NULL;
-
 	ad->popup = elm_popup_add(ad->win_main);
 	elm_object_style_set(ad->popup, "toast/circle");
 	elm_popup_orient_set(ad->popup, ELM_POPUP_ORIENT_BOTTOM);
@@ -1849,35 +1846,6 @@ static void __bluetooth_draw_toast_popup(struct bt_popup_appdata *ad, char *toas
 	evas_object_show(ad->popup);
 	evas_object_show(ad->win_main);
 	elm_object_focus_set(ad->popup, EINA_TRUE);
-
-#if 0
-	ao = elm_object_part_access_object_get(ad->popup, "access.outline");
-        if (ao != NULL)
-		elm_access_info_set(ao, ELM_ACCESS_INFO, toast_text);
-#endif
-}
-
-static void __bluetooth_draw_error_toast_popup(struct bt_popup_appdata *ad, char *toast_text)
-{
-	Evas_Object *ao = NULL;
-
-	ad->popup = elm_popup_add(ad->win_main);
-	elm_object_style_set(ad->popup, "toast/circle");
-	elm_object_text_set(ad->popup, toast_text);
-	elm_popup_timeout_set(ad->popup, 2.0);
-	evas_object_smart_callback_add(ad->popup, "timeout", __bluetooth_timeout_cb, NULL);
-
-	__bluetooth_set_win_level(ad->popup);
-
-	evas_object_show(ad->popup);
-	evas_object_show(ad->win_main);
-	elm_object_focus_set(ad->popup, EINA_TRUE);
-
-#if 0
-	ao = elm_object_part_access_object_get(ad->popup, "access.outline");
-        if (ao != NULL)
-		elm_access_info_set(ao, ELM_ACCESS_INFO, toast_text);
-#endif
 }
 
 static Eina_Bool __exit_idler_cb(void *data)
@@ -1902,30 +1870,6 @@ static void __bluetooth_win_del(void *data)
 	__popup_terminate();
 }
 
-static int __bluetooth_error_toast_timeout_cb(void *data)
-{
-	struct bt_popup_appdata *ad;
-
-	if (data == NULL)
-		return 0;
-
-	ad = (struct bt_popup_appdata *)data;
-
-	BT_DBG("Toast Popup timeout");
-
-	/* Destory toast popup and timer */
-	if (ad->timer) {
-		ecore_timer_del(ad->timer);
-		ad->timer = NULL;
-	}
-
-	if (ad->popup) {
-		elm_access_object_unregister(ad->popup);
-		evas_object_del(ad->popup);
-		ad->popup = NULL;
-	}
-	return 0;
-}
 static Evas_Object *__bluetooth_create_win(const char *name, void *data)
 {
 	Evas_Object *eo;
@@ -1943,8 +1887,6 @@ static void __bluetooth_session_init(struct bt_popup_appdata *ad)
 {
 	DBusGConnection *conn = NULL;
 	GError *err = NULL;
-
-	g_type_init();
 
 	conn = dbus_g_bus_get(DBUS_BUS_SYSTEM, &err);
 
@@ -1971,23 +1913,7 @@ static void __bluetooth_session_init(struct bt_popup_appdata *ad)
 void __bluetooth_set_color_table(void *data)
 {
 	FN_START;
-	struct bt_popup_appdata *ad = (struct bt_popup_appdata *)data;
 
-#if 0
-	/* Set color table */
-	ea_theme_changeable_ui_enabled_set(EINA_TRUE);
-	ad->color_table = ea_theme_color_table_new(COLOR_TABLE);
-	if (ad->color_table == NULL)
-		BT_ERR("ea_theme_color_table_new failed!");
-	else if (EINA_TRUE != ea_theme_colors_set(ad->color_table, EA_THEME_STYLE_DEFAULT))
-		BT_ERR("ea_theme_colors_set failed!");
-
-	ad->font_table = ea_theme_font_table_new(FONT_TABLE);
-	if (ad->font_table == NULL)
-		BT_ERR("ea_theme_color_table_new failed!");
-	else if (EINA_TRUE != ea_theme_fonts_set(ad->font_table))
-		BT_ERR("ea_theme_fonts_set failed!");
-#endif
 	FN_END;
 }
 
@@ -2182,5 +2108,5 @@ EXPORT int main(int argc, char *argv[])
 	callback.resume = __bluetooth_resume;
 	callback.app_control = __bluetooth_reset;
 
-	return ui_app_main(&argc, &argv, &callback, &ad);
+	return ui_app_main(argc, argv, &callback, &ad);
 }
