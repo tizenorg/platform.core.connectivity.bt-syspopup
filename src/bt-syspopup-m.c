@@ -196,8 +196,7 @@ static void __bluetooth_player_free_job_cb(void *data)
 	player_destroy(sound_player);
 
 	ret = sound_manager_get_focus_state(stream_info, &state_for_playback, NULL);
-	if (state_for_playback == SOUND_STREAM_FOCUS_STATE_ACQUIRED)
-	{
+	if (state_for_playback == SOUND_STREAM_FOCUS_STATE_ACQUIRED) {
 		ret = sound_manager_release_focus(stream_info, SOUND_STREAM_FOCUS_FOR_PLAYBACK, NULL);
 		if (ret != SOUND_MANAGER_ERROR_NONE)
 			BT_ERR("sound_manager_release_focus() get failed : %d", ret);
@@ -341,7 +340,7 @@ static int __bluetooth_notify_event(struct bt_popup_appdata *ad)
 	ret = player_create(&ad->player);
 	if (ret != PLAYER_ERROR_NONE) {
 		BT_ERR("creating the player handle failed[%d]", ret);
-		ad->player= NULL;
+		ad->player = NULL;
 		return ret;
 	}
 
@@ -353,8 +352,7 @@ static int __bluetooth_notify_event(struct bt_popup_appdata *ad)
 
 	/* Set the notification sound from vconf*/
 	path = vconf_get_str(VCONF_NOTI_SOUND);
-	if (path)
-	{
+	if (path) {
 		ret = player_set_uri(ad->player, path);
 		if (ret != 0)
 			BT_ERR("player_set_uri Failed : %d", ret);
@@ -891,14 +889,14 @@ static void __bluetooth_auth_check_label_clicked_cb(void *data, Evas_Object *obj
 							void *event_info)
 {
 	FN_START;
-	ret_if (!obj || !data);
+	ret_if(!obj || !data);
 
 	Elm_Object_Item *item = NULL;
 	item = (Elm_Object_Item *)event_info;
-	ret_if (!item);
+	ret_if(!item);
 
 	struct bt_popup_appdata *ad = data;
-	ret_if (!ad);
+	ret_if(!ad);
 
 	Evas_Object *content = elm_object_item_part_content_get(item, "elm.icon.2");
 	Evas_Object *ck = elm_object_part_content_get(content, "elm.swallow.content");
@@ -1174,7 +1172,7 @@ static void __bluetooth_input_mouseup_cb(void *data,
 	BT_DBG("ev->button : %d", ev->button);
 
 	if (ev->button == 3) {
-		ret_if (ad == NULL);
+		ret_if(ad == NULL);
 		evas_object_event_callback_del(ad->entry, EVAS_CALLBACK_MOUSE_UP,
 				__bluetooth_input_mouseup_cb);
 		evas_object_event_callback_del(ad->entry, EVAS_CALLBACK_KEY_DOWN,
@@ -1289,14 +1287,14 @@ static void __bluetooth_pswd_check_box_sel(void *data, Evas_Object *obj,
                                                        void *event_info)
 {
 	FN_START;
-	ret_if (!obj || !data);
+	ret_if(!obj || !data);
 
 	Elm_Object_Item *item = NULL;
 	item = (Elm_Object_Item *)event_info;
-	ret_if (!item);
+	ret_if(!item);
 
 	struct bt_popup_appdata *ad = data;
-	ret_if (!ad);
+	ret_if(!ad);
 
 	Evas_Object *content = elm_object_item_part_content_get(item, "elm.icon.2");
 	Evas_Object *ck = elm_object_part_content_get(content, "elm.swallow.content");
@@ -1341,7 +1339,7 @@ static Evas_Object *__bluetooth_passwd_entry_icon_get(
 				void *data, Evas_Object *obj, const char *part)
 {
 	FN_START;
-	retv_if (obj == NULL || data == NULL, NULL);
+	retv_if(obj == NULL || data == NULL, NULL);
 
 	Evas_Object *entry = NULL;
 	Evas_Object *layout = NULL;
@@ -1416,7 +1414,7 @@ static Evas_Object *__bluetooth_passwd_entry_icon_get(
 static char *__bluetooth_popup_desc_label_get(void *data, Evas_Object *obj,
 					      const char *part)
 {
-	retv_if (!data, NULL);
+	retv_if(!data, NULL);
 
 	if (!strcmp(part, "elm.text.multiline"))
 		return (char *)data;
@@ -1427,8 +1425,8 @@ static char *__bluetooth_access_check_label_get(void *data, Evas_Object *obj,
 					      const char *part)
 {
 	FN_START;
-	retv_if (!data, NULL);
-	retv_if (!strcmp(part, "elm.text.main.left"),
+	retv_if(!data, NULL);
+	retv_if(!strcmp(part, "elm.text.main.left"),
 			g_strdup(BT_STR_DO_NOT_SHOW_AGAIN));
 	FN_END;
 	return NULL;
@@ -1438,8 +1436,8 @@ static char *__bluetooth_passwd_show_passwd_label_get(void *data, Evas_Object *o
 					      const char *part)
 {
 	FN_START;
-	retv_if (!data, NULL);
-	retv_if (!strcmp(part, "elm.text.main.left"), g_strdup(BT_STR_SHOW_PIN));
+	retv_if(!data, NULL);
+	retv_if(!strcmp(part, "elm.text.main.left"), g_strdup(BT_STR_SHOW_PIN));
 	FN_END;
 	return NULL;
 }
@@ -1448,7 +1446,7 @@ static Evas_Object *__bluetooth_access_check_icon_get(
 
 {
 	FN_START;
-	retv_if (strcmp(part, "elm.icon.2"), NULL);
+	retv_if(strcmp(part, "elm.icon.2"), NULL);
 	struct bt_popup_appdata *ad = data;
 	retv_if(!ad, NULL);
 	Evas_Object *layout = NULL;
@@ -1477,7 +1475,7 @@ static Evas_Object *__bluetooth_passwd_show_passwd_icon_get(
 
 {
 	FN_START;
-	retv_if (strcmp(part, "elm.icon.2"), NULL);
+	retv_if(strcmp(part, "elm.icon.2"), NULL);
 	struct bt_popup_appdata *ad = data;
 	retv_if(!ad, NULL);
 	Evas_Object *layout = NULL;
@@ -1779,7 +1777,7 @@ static void
 __bluetooth_popup_block_clicked_cb(void *data, Evas_Object *obj, void *event_info)
 {
 	FN_START;
-	if(obj)
+	if (obj)
 		evas_object_del(obj);
 }
 
@@ -1790,7 +1788,7 @@ static void __bluetooth_draw_toast_popup(struct bt_popup_appdata *ad, char *toas
 	elm_object_style_set(ad->popup, "toast");
 	evas_object_size_hint_weight_set(ad->popup, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
 	ea_object_event_callback_add(ad->popup, EA_CALLBACK_BACK, ea_popup_back_cb, NULL);
-	elm_object_part_text_set(ad->popup,"elm.text.content", toast_text);
+	elm_object_part_text_set(ad->popup, "elm.text.content", toast_text);
 	evas_object_smart_callback_add(ad->popup, "block,clicked", __bluetooth_popup_block_clicked_cb, NULL);
 
 //	__bluetooth_set_win_level(ad->popup);
@@ -2363,7 +2361,7 @@ static bool __bluetooth_create(void *data)
 
 	/* create window */
 	win = __bluetooth_create_win(PACKAGE);
-	retv_if (win == NULL, false);
+	retv_if(win == NULL, false);
 
 #if 0
 	/* Enable Changeable UI feature */
@@ -2500,7 +2498,7 @@ static void __bluetooth_reset(app_control_h app_control, void *data)
 	} else {
 		BT_ERR("event type is NULL ");
 	}
-release :
+release:
 	bundle_free(b);
 }
 

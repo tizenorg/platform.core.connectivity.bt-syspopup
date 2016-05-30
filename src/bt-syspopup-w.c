@@ -552,7 +552,7 @@ void __bluetooth_device_bond_created_cb(int result, bt_device_info_s *device_inf
 	if (ad == NULL)
 		return;
 
-	if(result == BT_ERROR_NONE) {
+	if (result == BT_ERROR_NONE) {
 		BT_DBG("A bond is created.");
 		BT_DBG("%s, %s", device_info->remote_name, device_info->remote_address);
 	} else {
@@ -843,12 +843,12 @@ char *__bluetooth_convert_rgba_to_hex(int r, int g, int b, int a)
 	int hexcolor = 0;
 	char* string = NULL;
 
-	string = g_try_malloc0(sizeof(char )* 255);
+	string = g_try_malloc0(sizeof(char) * 255);
 	if (string == NULL)
 		return NULL;
 
 	hexcolor = (r << 24) + (g << 16) + (b << 8) + a;
-	sprintf(string, "%08x", hexcolor );
+	sprintf(string, "%08x", hexcolor);
 
 	return string;
 }
@@ -1034,8 +1034,8 @@ static void __bluetooth_editfield_del_cb(void *data, Evas *e,
 void __bluetooth_layout_wearable_input_pop(bt_pincode_input_object *po)
 {
 	FN_START;
-	ret_if (!po);
-	ret_if (!po->naviframe);
+	ret_if(!po);
+	ret_if(!po->naviframe);
 
 	elm_naviframe_item_pop(po->naviframe);
 	if (po->pincode && strlen(po->pincode) > 0 && po->ok_btn) {
@@ -1050,8 +1050,8 @@ gboolean __bluetooth_view_base_window_is_focus(bt_pincode_input_object *po)
 {
 	FN_START;
 	Eina_Bool ret;
-	retv_if (!po, FALSE);
-	retv_if (!po->win_main, FALSE);
+	retv_if(!po, FALSE);
+	retv_if(!po->win_main, FALSE);
 
 	ret = elm_win_focus_get(po->win_main);
 	return ret == EINA_TRUE ? TRUE : FALSE;
@@ -1064,7 +1064,7 @@ static void __bluetooth_editfield_state_changed_cb(void *data, Ecore_IMF_Context
 	FN_START;
 	bt_pincode_input_object *po = data;
 
-	ret_if (!po);
+	ret_if(!po);
 
 	if (value == ECORE_IMF_INPUT_PANEL_STATE_HIDE) {
 		if (__bluetooth_view_base_window_is_focus(po)) {
@@ -1243,7 +1243,7 @@ static void __bluetooth_pincode_btn_cb(void *data, Evas_Object *obj,
 	bt_pincode_input_object *po = ad->po;
 	retm_if(po == NULL, "ad is NULL!");
 
-	if(ad->event_type == BT_EVENT_PIN_REQUEST) {
+	if (ad->event_type == BT_EVENT_PIN_REQUEST) {
 		dbus_g_proxy_call_no_reply(ad->agent_proxy,
 					"ReplyPinCode", G_TYPE_UINT, BT_AGENT_ACCEPT,
 					G_TYPE_STRING, po->pincode,
@@ -1341,7 +1341,7 @@ bt_pincode_input_object *__bluetooth_pincode_input_new(struct bt_popup_appdata *
 	retv_if(!ad, NULL);
 	bt_pincode_input_object *object = NULL;
 	object = g_new0(bt_pincode_input_object, 1);
-	retvm_if (!object, NULL, "layout_wearable_input_new() failed.");
+	retvm_if(!object, NULL, "layout_wearable_input_new() failed.");
 	object->win_main = ad->win_main;
 	FN_END;
 	return object;
@@ -1495,7 +1495,7 @@ static void __bluetooth_draw_input_view(struct bt_popup_appdata *ad,
 	/* Bottom button layout */
 	layout = elm_layout_add(naviframe);
 	elm_layout_theme_set(layout, "layout", "bottom_button", "default");
-	evas_object_size_hint_weight_set (layout, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
+	evas_object_size_hint_weight_set(layout, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
 	evas_object_size_hint_align_set(layout, EVAS_HINT_FILL, EVAS_HINT_FILL);
 	evas_object_show(layout);
 
@@ -1839,7 +1839,7 @@ static void __bluetooth_draw_toast_popup(struct bt_popup_appdata *ad, char *toas
 	eext_object_event_callback_add(ad->popup, EEXT_CALLBACK_BACK, __bluetooth_popup_hide_cb, NULL);
 	evas_object_smart_callback_add(ad->popup, "dismissed", __bluetooth_popup_hide_finished_cb, NULL);
 	evas_object_smart_callback_add(ad->popup, "block,clicked", __bluetooth_popup_block_clicked_cb, NULL);
-	elm_object_part_text_set(ad->popup,"elm.text", toast_text);
+	elm_object_part_text_set(ad->popup, "elm.text", toast_text);
 
 	__bluetooth_set_win_level(ad->popup);
 
