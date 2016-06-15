@@ -8,7 +8,7 @@ Summary:    bluetooth system-popup application (bluetooth system popup)
 Version:    0.3.1
 Release:    0
 Group:      main
-License:    Apache License, Version 2.0
+License:    Flora-1.1
 Source0:    %{name}-%{version}.tar.gz
 BuildRequires:  pkgconfig(evas)
 %if "%{?profile}" == "wearable"
