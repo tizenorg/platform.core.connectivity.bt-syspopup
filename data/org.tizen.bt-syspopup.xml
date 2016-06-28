@@ -7,4 +7,7 @@
 		<label>Bluetooth System Popup</label>
 		<icon>org.tizen.bt-syspopup.png</icon>
 	</ui-application>
+	<privileges>
+		<privilege>http://tizen.org/privilege/window.priority.set</privilege>
+	</privileges>
 </manifest>
