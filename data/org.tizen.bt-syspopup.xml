@@ -9,5 +9,7 @@
 	</ui-application>
 	<privileges>
 		<privilege>http://tizen.org/privilege/window.priority.set</privilege>
+        <privilege>http://tizen.org/privilege/bluetooth</privilege>
+        <privilege>http://tizen.org/privilege/bluetooth.admin</privilege>
 	</privileges>
 </manifest>

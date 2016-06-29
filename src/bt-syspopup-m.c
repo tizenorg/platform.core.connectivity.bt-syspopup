@@ -31,6 +31,7 @@
 #include <E_DBus.h>
 #include <aul.h>
 #include <bluetooth.h>
+#include <bluetooth_internal.h>
 #include <feedback.h>
 #include "bt-syspopup-m.h"
 #include <notification.h>
@@ -677,13 +678,19 @@ static void __bluetooth_passkey_confirm_cb(void *data,
 	const char *event = elm_object_text_get(obj);
 
 	if (!g_strcmp0(event, BT_STR_CONFIRM)) {
+#if 0
 		dbus_g_proxy_call_no_reply(ad->agent_proxy, "ReplyConfirmation",
 					   G_TYPE_UINT, BT_AGENT_ACCEPT,
 					   G_TYPE_INVALID, G_TYPE_INVALID);
+#endif
+		bt_passkey_confirmation_reply(true);
 	} else {
+#if 0
 		dbus_g_proxy_call_no_reply(ad->agent_proxy, "ReplyConfirmation",
 					   G_TYPE_UINT, BT_AGENT_CANCEL,
 					   G_TYPE_INVALID, G_TYPE_INVALID);
+#endif
+		bt_passkey_confirmation_reply(false);
 	}
 
 	evas_object_del(obj);
