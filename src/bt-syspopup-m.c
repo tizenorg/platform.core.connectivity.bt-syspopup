@@ -456,13 +456,15 @@ static void __bluetooth_remove_all_event(struct bt_popup_appdata *ad)
 	BT_INFO("Remove event 0X%X", ad->event_type);
 	switch (ad->event_type) {
 	case BT_EVENT_PIN_REQUEST:
-
+#ifdef NO_DBUS_REPLY
+		bt_passkey_reply("0000", false);
+#else
 		dbus_g_proxy_call_no_reply(ad->agent_proxy,
 					   "ReplyPinCode",
 					   G_TYPE_UINT, BT_AGENT_CANCEL,
 					   G_TYPE_STRING, "", G_TYPE_INVALID,
 					   G_TYPE_INVALID);
-
+#endif
 		break;
 
 
@@ -473,22 +475,26 @@ static void __bluetooth_remove_all_event(struct bt_popup_appdata *ad)
 		break;
 
 	case BT_EVENT_PASSKEY_CONFIRM_REQUEST:
-
+#ifdef NO_DBUS_REPLY
+		bt_passkey_confirmation_reply(true);
+#else
 		dbus_g_proxy_call_no_reply(ad->agent_proxy,
 					   "ReplyConfirmation",
 					   G_TYPE_UINT, BT_AGENT_CANCEL,
 					   G_TYPE_INVALID, G_TYPE_INVALID);
-
+#endif
 		break;
 
 	case BT_EVENT_PASSKEY_REQUEST:
-
+#ifdef NO_DBUS_REPLY
+		bt_passkey_reply("0000", false);
+#else
 		dbus_g_proxy_call_no_reply(ad->agent_proxy,
 					   "ReplyPasskey",
 					   G_TYPE_UINT, BT_AGENT_CANCEL,
 					   G_TYPE_STRING, "", G_TYPE_INVALID,
 					   G_TYPE_INVALID);
-
+#endif
 		break;
 
 	case BT_EVENT_PASSKEY_DISPLAY_REQUEST:
@@ -496,12 +502,15 @@ static void __bluetooth_remove_all_event(struct bt_popup_appdata *ad)
 		break;
 
 	case BT_EVENT_AUTHORIZE_REQUEST:
-
+#ifdef NO_DBUS_REPLY
+		/* Should add 1 more API for authorize reply */
+		bt_passkey_confirmation_reply(true);
+#else
 		dbus_g_proxy_call_no_reply(ad->agent_proxy,
 					   "ReplyAuthorize",
 					   G_TYPE_UINT, BT_AGENT_CANCEL,
 					   G_TYPE_INVALID, G_TYPE_INVALID);
-
+#endif
 		break;
 
 	case BT_EVENT_APP_CONFIRM_REQUEST:
@@ -533,12 +542,14 @@ static void __bluetooth_remove_all_event(struct bt_popup_appdata *ad)
 	case BT_EVENT_PHONEBOOK_REQUEST:
 	case BT_EVENT_MESSAGE_REQUEST:
 	case BT_EVENT_EXCHANGE_REQUEST:
-
+#ifdef NO_DBUS_REPLY
+		bt_passkey_confirmation_reply(false);
+#else
 		dbus_g_proxy_call_no_reply(ad->agent_proxy,
 					   "ReplyAuthorize",
 					   G_TYPE_UINT, BT_AGENT_CANCEL,
 					   G_TYPE_INVALID, G_TYPE_INVALID);
-
+#endif
 		break;
 
 	case BT_EVENT_CONFIRM_OVERWRITE_REQUEST: {
@@ -641,15 +652,23 @@ static void __bluetooth_input_request_cb(void *data,
 		     (response == BT_AGENT_ACCEPT) ? "Accept" : "Cancel");
 
 	if (ad->event_type == BT_EVENT_PIN_REQUEST) {
+#ifdef NO_DBUS_REPLY
+		bt_passkey_reply(convert_input_text, true);
+#else
 		dbus_g_proxy_call_no_reply(ad->agent_proxy,
 				   "ReplyPinCode", G_TYPE_UINT, response,
 				   G_TYPE_STRING, convert_input_text,
 				   G_TYPE_INVALID, G_TYPE_INVALID);
+#endif
 	} else {
+#ifdef NO_DBUS_REPLY
+		bt_passkey_reply(convert_input_text, true);
+#else
 		dbus_g_proxy_call_no_reply(ad->agent_proxy,
 				   "ReplyPasskey", G_TYPE_UINT, response,
 				   G_TYPE_STRING, convert_input_text,
 				   G_TYPE_INVALID, G_TYPE_INVALID);
+#endif
 	}
 	__bluetooth_delete_input_view(ad);
 
@@ -678,19 +697,21 @@ static void __bluetooth_passkey_confirm_cb(void *data,
 	const char *event = elm_object_text_get(obj);
 
 	if (!g_strcmp0(event, BT_STR_CONFIRM)) {
-#if 0
+#ifdef NO_DBUS_REPLY
+		bt_passkey_confirmation_reply(true);
+#else
 		dbus_g_proxy_call_no_reply(ad->agent_proxy, "ReplyConfirmation",
 					   G_TYPE_UINT, BT_AGENT_ACCEPT,
 					   G_TYPE_INVALID, G_TYPE_INVALID);
 #endif
-		bt_passkey_confirmation_reply(true);
 	} else {
-#if 0
+#ifdef NO_DBUS_REPLY
+		bt_passkey_confirmation_reply(false);
+#else
 		dbus_g_proxy_call_no_reply(ad->agent_proxy, "ReplyConfirmation",
 					   G_TYPE_UINT, BT_AGENT_CANCEL,
 					   G_TYPE_INVALID, G_TYPE_INVALID);
 #endif
-		bt_passkey_confirmation_reply(false);
 	}
 
 	evas_object_del(obj);
@@ -769,9 +790,16 @@ static void __bluetooth_authorization_request_cb(void *data,
 		reply_val = BT_AGENT_CANCEL;
 	}
 
+#ifdef NO_DBUS_REPLY
+	if (reply_val == BT_AGENT_ACCEPT || reply_val == BT_AGENT_ACCEPT_ALWAYS)
+		bt_passkey_confirmation_reply(true);
+	else
+		bt_passkey_confirmation_reply(false);
+#else
 	dbus_g_proxy_call_no_reply(ad->agent_proxy, "ReplyAuthorize",
 		G_TYPE_UINT, reply_val,
 		G_TYPE_INVALID, G_TYPE_INVALID);
+#endif
 
 	ad->make_trusted = FALSE;
 
@@ -800,6 +828,12 @@ static void __bluetooth_push_authorization_request_cb(void *data,
 
 	const char *event = elm_object_text_get(obj);
 
+#ifdef NO_DBUS_REPLY
+	if (!g_strcmp0(event, BT_STR_OK))
+		bt_passkey_confirmation_reply(true);
+	else
+		bt_passkey_confirmation_reply(false);
+#else
 	if (!g_strcmp0(event, BT_STR_OK))
 		dbus_g_proxy_call_no_reply(ad->obex_proxy, "ReplyAuthorize",
 					   G_TYPE_UINT, BT_AGENT_ACCEPT,
@@ -808,7 +842,7 @@ static void __bluetooth_push_authorization_request_cb(void *data,
 		dbus_g_proxy_call_no_reply(ad->obex_proxy, "ReplyAuthorize",
 					   G_TYPE_UINT, BT_AGENT_CANCEL,
 					   G_TYPE_INVALID, G_TYPE_INVALID);
-
+#endif
 	__bluetooth_win_del(ad);
 }
 
@@ -1172,7 +1206,6 @@ static void __bluetooth_input_mouseup_cb(void *data,
 	FN_START;
 	Evas_Event_Mouse_Up *ev = event_info;
 	struct bt_popup_appdata *ad = data;
-	int response = BT_AGENT_CANCEL;
 	char *input_text = NULL;
 	char *convert_input_text = NULL;
 
@@ -1198,6 +1231,11 @@ static void __bluetooth_input_mouseup_cb(void *data,
 		if (convert_input_text == NULL)
 			return;
 
+#ifdef NO_DBUS_REPLY
+		bt_passkey_reply(convert_input_text, true);
+#else
+		int response = BT_AGENT_CANCEL;
+
 		if (ad->event_type == BT_EVENT_PIN_REQUEST) {
 			dbus_g_proxy_call_no_reply(ad->agent_proxy,
 					   "ReplyPinCode", G_TYPE_UINT, response,
@@ -1209,6 +1247,7 @@ static void __bluetooth_input_mouseup_cb(void *data,
 					   G_TYPE_STRING, convert_input_text,
 					   G_TYPE_INVALID, G_TYPE_INVALID);
 		}
+#endif
 		__bluetooth_delete_input_view(ad);
 		free(convert_input_text);
 		if (ad->entry) {
