@@ -39,7 +39,7 @@
 #define BUTTON_HEIGHT 85
 
 collections {
-#include "groups/passkey_confirm.edc"
+base_scale: 1.3;
 #include "groups/auth_popup.edc"
 #include "groups/passwd_popup.edc"
 #include "groups/passkey_confirm_popup.edc"

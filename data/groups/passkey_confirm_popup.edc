@@ -14,12 +14,148 @@
  *  limitations under the License.
  *
  */
+#define BG_COLOR	0 0 0 255
+
+#define PART(TYPE, NAME, DESCRIPION) \
+	part { \
+		name: NAME; \
+		type: TYPE; \
+		scale: 1; \
+		DESCRIPION \
+	}
+#define POPUP_BASE_DEFAULT_MIN_INC                         360 360
+#define POPUP_LEFT_RIGHT_PADDING_WIDTH_INC         33
+#define POPUP_TOP_PADDING_HEIGHT_INC               110
+#define POPUP_TOP_PADDING_NOTITLE_HEIGHT_INC       76
+#define POPUP_BOTTOM_PADDING_HEIGHT_INC            111
+#define POPUP_TITLE_BOTTOM_PADDING_HEIGHT_INC      8
+#define POPUP_TITLE_TEXT_SIZE_INC                          30
+#define POPUP_BODY_TEXT_SIZE_INC                           34
 
 images {
 	image: "b_setup_wizard_bluetooth_pairing.png" COMP;
 }
-
-#define BG_COLOR	0 0 0 255
+styles {
+	style {
+		name: "popup_title_style";
+		base: "font=Tizen:style=Regular font_size="32" color=#FFFFFF color_class=AT011 align=center wrap=mixed text_class=AT011";
+	}
+	style {
+		name: "popup_body_default_font_style";
+		base: "font=Tizen:style=Regular font_size="28" color=#FFFFFF color_class=AT018 align=center wrap=mixed text_class=AT018";
+	}
+}
+group { name: "no_button_passkey_confirm_popup";
+	limits {
+		vertical: "content_area" "360";
+	}
+	parts {
+		part { name: "bg";
+			type: SPACER;
+			scale: 1;
+			description {
+				state: "default" 0.0;
+				min: POPUP_BASE_DEFAULT_MIN_INC;
+			}
+		}
+		part {
+			name: "top.left.padding";
+			type: SPACER;
+			scale: 1;
+			description {
+				state: "default" 0.0;
+				min: POPUP_LEFT_RIGHT_PADDING_WIDTH_INC POPUP_TOP_PADDING_HEIGHT_INC;
+				rel1.to: "bg";
+				rel2 {
+					to: "bg";
+					relative: 0.0 0.0;
+				}
+				align: 0.0 0.0;
+				fixed: 1 1;
+			}
+		}
+		part {
+			name: "bottom.right.padding";
+			type: SPACER;
+			scale: 1;
+			description {
+				state: "default" 0.0;
+				min: POPUP_LEFT_RIGHT_PADDING_WIDTH_INC POPUP_BOTTOM_PADDING_HEIGHT_INC;
+				rel1 {
+					to: "bg";
+					relative: 1.0 1.0;
+				}
+				rel2.to: "bg";
+				align: 1.0 1.0;
+				fixed: 1 1;
+			}
+			description {
+				state: "center_align" 0.0;
+				inherit: "default" 0.0;
+				min: POPUP_LEFT_RIGHT_PADDING_WIDTH_INC POPUP_TOP_PADDING_NOTITLE_HEIGHT_INC;
+			}
+		}
+		part {
+			name: "elm.text1";
+			type: TEXTBLOCK;
+			scale: 1;
+			description {
+				state: "default" 0.0;
+				rel1 {
+					to: "top.left.padding";
+					relative: 1.0 1.0;
+				}
+				rel2 {
+					to_x: "bottom.right.padding";
+					to_y: "top.left.padding";
+					relative: 0.0 1.0;
+				}
+				align: 0.5 0.0;
+				fixed: 0 1;
+				text {
+					style: "popup_title_style";
+					min: 0 1;
+				}
+			}
+		}
+		part {
+			name: "text1.bottom.padding";
+			type: SPACER;
+			scale: 1;
+			description {
+				state: "default" 0.0;
+				min: 0 POPUP_TITLE_BOTTOM_PADDING_HEIGHT_INC;
+				rel1 {
+					to: "elm.text1";
+					relative: 0.0 1.0;
+				}
+				rel2.to: "elm.text1";
+				align: 0.5 0.0;
+				fixed: 0 1;
+			}
+		}
+		part {
+			name: "elm.text2";
+			type: TEXTBLOCK;
+			scale: 1;
+			description {
+				state: "default" 0.0;
+				rel1 {
+					to: "text1.bottom.padding";
+					relative: 0.0 1.0;
+				}
+				rel2 {
+					to: "bottom.right.padding";
+					relative: 0.0 0.0;
+				}
+				text {
+					style: "popup_body_default_font_style";
+					min: 0 1;
+				}
+			}
+		}
+	}
+}
 
 group { name: "passkey_confirm_popup";
 	parts {
@@ -247,3 +383,151 @@ group { name: "elm/button/base/custom_focus_style";
 	}
 }
 
+group { name: "popup_checkview_internal";
+   parts {
+      part { name: "label";
+         type: SWALLOW;
+         scale: 1;
+         description { state: "default" 0.0;
+            rel2.relative: 1.0 0.0;
+            fixed: 0 1;
+            align: 0.5 0.0;
+         }
+      }
+      part { name: "bottom_pad";
+         type: SPACER;
+         scale: 1;
+         description { state: "default" 0.0;
+            min: 0 4;
+            rel1 {
+               to: "label";
+               relative: 0.0 1.0;
+            }
+            rel2.to: "label";
+            align: 0.5 0.0;
+            fixed: 0 1;
+         }
+      }
+      part { name: "check";
+         type: SWALLOW;
+         scale: 1;
+         description { state: "default" 0.0;
+            rel1 {
+               to: "bottom_pad";
+               relative: 0.0 1.0;
+            }
+         }
+      }
+   }
+}
+
+group {
+	name: "entry_layout";
+	parts {
+		part {
+			name: "base";
+			type: SPACER;
+			scale: 1;
+			description {
+				state: "default" 0.0;
+				min: 360 0;
+			}
+		}
+
+		part {
+			name: "content_top_padding";
+			type: SPACER;
+			scale: 1;
+			description {
+				state: "default" 0.0;
+				min: 0 44;
+				fixed: 0 1;
+				align: 0.0 0.0;
+				rel1 {
+					to_x: "content_left_padding";
+					relative: 1.0 0.0;
+				}
+				rel2 {
+					to_x: "content_right_padding";
+					relative: 0.0 0.0;
+				}
+			}
+		}
+
+		part {
+			name: "content_left_padding";
+			type: SPACER;
+			scale: 1;
+			description {
+				state: "default" 0.0;
+				min: 78 0;
+				fixed: 1 0;
+				align: 0.0 0.0;
+				rel1 {
+					to: "base";
+					relative: 0.0 0.0;
+				}
+				rel2 {
+					to: "base";
+					relative: 0.0 1.0;
+				}
+			}
+		}
+
+		part {
+			name: "content_right_padding";
+			type: SPACER;
+			scale: 1;
+			description {
+				state: "default" 0.0;
+				min: 78 0;
+				fixed: 1 0;
+				align: 1.0 0.0;
+				rel1 {
+					to: "base";
+					relative: 1.0 0.0;
+				}
+				rel2 {
+					to: "base";
+					relative: 1.0 1.0;
+				}
+			}
+		}
+
+		part {
+			name: "content_bg";
+			type: SPACER;
+			scale: 1;
+			description {
+				state: "default" 0.0;
+				min: 0 45;
+				fixed: 0 1;
+				align: 0.0 0.0;
+				rel1 {
+					to_x: "content_left_padding";
+					to_y: "content_top_padding";
+					relative: 1.0 1.0;
+				}
+				rel2 {
+					to_x: "content_right_padding";
+					to_y: "content_top_padding";
+					relative: 0.0 1.0;
+				}
+			}
+		}
+
+		part {
+			name: "elm.swallow.content";
+			type: SWALLOW;
+			scale: 1;
+			description {
+				state: "default" 0.0;
+				min: 0 45;
+				fixed: 1 1;
+				align: 0.0 0.0;
+				rel1.to: "content_bg";
+				rel2.to: "content_bg";
+			}
+		}
+	}
+}
