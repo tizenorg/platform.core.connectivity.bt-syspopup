@@ -26,13 +26,8 @@
 #include <dbus/dbus-glib.h>
 #include <efl_extension.h>
 
-#ifndef PACKAGE_NAME
-#define PACKAGE_NAME "org.tizen.bt-syspopup"
-#endif
-
-#ifndef PREFIX
-#define PREFIX "/usr/apps"PACKAGE_NAME
-#endif
+#define BT_PACKAGE_NAME "org.tizen.bt-syspopup"
+#define BT_PREFIX "/usr/apps/"BT_PACKAGE_NAME
 
 #define EXPORT __attribute__((visibility("default")))
 
@@ -40,10 +35,10 @@
 
 #define PACKAGE		"bt-syspopup"
 #define APPNAME		"bt-syspopup"
-#define ICON_DIR	PREFIX"/res/default/small/icon"
+#define ICON_DIR	BT_PREFIX"/res/default/small/icon"
 
-#define CUSTOM_POPUP_PATH PREFIX"/res/edje/custom_popup.edj"
-#define POPUP_IMAGE_PATH PREFIX"/res/images"
+#define CUSTOM_POPUP_PATH BT_PREFIX"/res/edje/custom_popup.edj"
+#define POPUP_IMAGE_PATH BT_PREFIX"/res/images"
 
 #define BT_COMMON_PKG		"bluetooth"
 #define BT_LOCALEDIR		"/usr/apps/org.tizen.bluetooth/res/locale"
