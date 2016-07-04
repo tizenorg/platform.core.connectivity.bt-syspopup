@@ -30,13 +30,9 @@
 #include <dbus/dbus-glib.h>
 #include <player.h>
 
-#ifndef PACKAGE_NAME
-#define PACKAGE_NAME "org.tizen.bt-syspopup"
-#endif
+#define BT_PACKAGE_NAME "org.tizen.bt-syspopup"
 
-#ifndef PREFIX
-#define PREFIX "/usr/apps"PACKAGE_NAME
-#endif
+#define BT_PREFIX "/usr/apps/"BT_PACKAGE_NAME
 
 #define EXPORT __attribute__((visibility("default")))
 
@@ -44,9 +40,9 @@
 
 #define PACKAGE		"bt-syspopup"
 #define APPNAME		"bt-syspopup"
-#define ICON_DIR	PREFIX"/res/default/small/icon"
+#define ICON_DIR	BT_PREFIX"/res/default/small/icon"
 
-#define CUSTOM_POPUP_PATH PREFIX"/res/edje/custom_popup.edj"
+#define CUSTOM_POPUP_PATH BT_PREFIX"/res/edje/custom_popup.edj"
 
 #define BT_COMMON_PKG		"ug-setting-bluetooth-efl"
 #define BT_LOCALEDIR		"/usr/ug/res/locale"
@@ -288,6 +284,8 @@ struct bt_popup_appdata {
 	bt_rotate_mode_t rotation;
 	gboolean make_trusted;
 	bt_popup_event_type_t event_type;
+
+	char *description;
 
 	player_h player;
 	sound_stream_info_h stream_info;

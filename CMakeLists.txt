@@ -61,6 +61,7 @@ pkg_check_modules(pkgs REQUIRED
 	elementary
 	evas
 	efl-assist
+	efl-extension
 	gobject-2.0
 	syspopup
 	capi-network-bluetooth

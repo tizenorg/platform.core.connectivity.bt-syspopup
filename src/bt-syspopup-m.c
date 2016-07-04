@@ -38,6 +38,7 @@
 #include <app_control.h>
 #include <app_control_internal.h>
 #include <efl_assist.h>
+#include <efl_extension.h>
 
 static void __bluetooth_delete_input_view(struct bt_popup_appdata *ad);
 static void __bluetooth_win_del(void *data);
@@ -121,6 +122,8 @@ static void __bluetooth_cleanup(struct bt_popup_appdata *ad)
 		g_object_unref(ad->agent_proxy);
 		ad->agent_proxy = NULL;
 	}
+
+	g_free(ad->description);
 }
 
 static void __bt_main_win_rot_changed_cb(void *data, Evas_Object *obj,
@@ -1279,6 +1282,7 @@ static void __bluetooth_pin_check_clicked_cb(void *data, Evas_Object *obj,
 	} else {
 		elm_entry_password_set((Evas_Object *)data, EINA_TRUE);
 	}
+	elm_entry_cursor_end_set((Evas_Object *)data);
 
 	FN_END;
 }
@@ -1346,28 +1350,37 @@ static Evas_Object *__bluetooth_passwd_entry_icon_get(
 	struct bt_popup_appdata *ad = data;
 	static Elm_Entry_Filter_Limit_Size limit_filter_data;
 
-	if (!strcmp(part, "elm.icon.entry")) {
+	if (!strcmp(part, "elm.swallow.content")) {
 		layout = elm_layout_add(obj);
-		elm_layout_file_set(layout, CUSTOM_POPUP_PATH, "entry_style");
+		elm_layout_theme_set(layout, "layout", "editfield", "singleline");
 		evas_object_size_hint_weight_set(layout, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-
+		evas_object_size_hint_align_set(layout, EVAS_HINT_FILL, 0.0);
+		evas_object_size_hint_weight_set(layout, EVAS_HINT_EXPAND, 0.0);
 
 		static Elm_Entry_Filter_Accept_Set accept_set = {
 			.accepted = "0123456789",
 			.rejected = NULL
 		};
 
-		entry = ea_editfield_add(layout, EA_EDITFIELD_SCROLL_SINGLELINE_PASSWORD);
+		entry = elm_entry_add(layout);
 #if 0
 		ea_entry_selection_back_event_allow_set(entry, EINA_TRUE);
 #endif
-		evas_object_size_hint_weight_set(entry, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-		evas_object_size_hint_align_set(entry, EVAS_HINT_FILL, EVAS_HINT_FILL);
+		evas_object_size_hint_weight_set(entry, EVAS_HINT_EXPAND, 0.0);
+		evas_object_size_hint_align_set(entry, EVAS_HINT_FILL, 0.0);
 		elm_entry_single_line_set(entry, EINA_TRUE);
-		elm_entry_prediction_allow_set(entry, EINA_FALSE);
 		elm_entry_scrollable_set(entry, EINA_TRUE);
+		elm_entry_password_set(entry, EINA_FALSE);
+
 		elm_object_signal_emit(entry, "elm,action,hide,search_icon", "");
-		elm_object_part_text_set(entry, "elm.guide", BT_STR_PIN);
+		elm_object_part_text_set(entry, "guide", BT_STR_PIN);
+		eext_entry_selection_back_event_allow_set(entry, EINA_TRUE);
+		elm_entry_prediction_allow_set(entry, EINA_FALSE);
+
+//		elm_entry_input_panel_imdata_set(entry, "action=disable_emoticons", 24);
+		elm_entry_input_panel_return_key_type_set(entry,
+				ELM_INPUT_PANEL_RETURN_KEY_TYPE_DONE);
+		elm_entry_input_panel_enabled_set(entry, EINA_TRUE);
 
 		elm_entry_markup_filter_append(entry, elm_entry_filter_accept_set,
 				&accept_set);
@@ -1399,7 +1412,7 @@ static Evas_Object *__bluetooth_passwd_entry_icon_get(
 		evas_object_event_callback_add(entry, EVAS_CALLBACK_SHOW,
 				__bluetooth_entry_edit_mode_show_cb, ad);
 
-		elm_object_part_content_set(layout, "entry_part", entry);
+		elm_object_part_content_set(layout, "elm.swallow.content", entry);
 		//evas_object_show(entry);
 		//elm_object_focus_set(entry, EINA_TRUE);
 
@@ -1414,10 +1427,19 @@ static Evas_Object *__bluetooth_passwd_entry_icon_get(
 static char *__bluetooth_popup_desc_label_get(void *data, Evas_Object *obj,
 					      const char *part)
 {
+	FN_START;
+
+	struct bt_popup_appdata *ad;
+
 	retv_if(!data, NULL);
 
+	ad = data;
+
 	if (!strcmp(part, "elm.text.multiline"))
-		return (char *)data;
+		return g_strdup(ad->description);
+
+	FN_END;
+
 	return NULL;
 }
 
@@ -1437,7 +1459,9 @@ static char *__bluetooth_passwd_show_passwd_label_get(void *data, Evas_Object *o
 {
 	FN_START;
 	retv_if(!data, NULL);
-	retv_if(!strcmp(part, "elm.text.main.left"), g_strdup(BT_STR_SHOW_PIN));
+	if (!strcmp("elm.text", part))
+		return g_strdup(BT_STR_SHOW_PIN);
+
 	FN_END;
 	return NULL;
 }
@@ -1470,31 +1494,29 @@ static Evas_Object *__bluetooth_access_check_icon_get(
 	FN_END;
 	return layout;
 }
+
 static Evas_Object *__bluetooth_passwd_show_passwd_icon_get(
 				void *data, Evas_Object *obj, const char *part)
 
 {
 	FN_START;
-	retv_if(strcmp(part, "elm.icon.2"), NULL);
+	Evas_Object *check = NULL;
+
+	retv_if(strcmp(part, "elm.swallow.end"), NULL);
+
 	struct bt_popup_appdata *ad = data;
 	retv_if(!ad, NULL);
-	Evas_Object *layout = NULL;
-	layout = elm_layout_add(obj);
 
-	elm_layout_theme_set(layout, "layout", "list/C/type.2", "default");
-	Evas_Object *check = elm_check_add(layout);
+	check = elm_check_add(obj);
 	evas_object_propagate_events_set(check, EINA_FALSE);
-	elm_object_style_set(check, "popup");
-	elm_check_state_set(check, EINA_FALSE);
+
 	evas_object_size_hint_align_set(check, EVAS_HINT_FILL, EVAS_HINT_FILL);
 	evas_object_size_hint_weight_set(check, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
 	evas_object_smart_callback_add(check, "changed",
 			__bluetooth_pin_check_clicked_cb, ad->entry);
 
-	elm_object_tree_focus_allow_set(check, EINA_FALSE);
-	elm_layout_content_set(layout, "elm.swallow.content", check);
 	FN_END;
-	return layout;
+	return check;
 }
 
 static void __bluetooth_draw_input_view(struct bt_popup_appdata *ad,
@@ -1503,7 +1525,6 @@ static void __bluetooth_draw_input_view(struct bt_popup_appdata *ad,
 			(void *data, Evas_Object *obj, void *event_info))
 {
 	FN_START;
-	Evas_Object *layout = NULL;
 	Evas_Object *passpopup = NULL;
 	Evas_Object *l_button = NULL;
 	Evas_Object *r_button = NULL;
@@ -1512,48 +1533,39 @@ static void __bluetooth_draw_input_view(struct bt_popup_appdata *ad,
 
 	ret_if(ad == NULL || ad->win_main == NULL || ad->layout == NULL);
 
-	evas_object_show(ad->win_main);
+//	evas_object_show(ad->win_main);
 
 	passpopup = elm_popup_add(ad->layout);
-	elm_object_content_set(ad->layout, passpopup);
-	elm_object_style_set(passpopup, "no_effect");
 	ad->popup = passpopup;
+
+	elm_popup_align_set(passpopup, ELM_NOTIFY_ALIGN_FILL, 1.0);
+	evas_object_size_hint_weight_set(passpopup, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
 
 	/*set window level to HIGH*/
 //	__bluetooth_set_win_level(ad->popup);
 
 	elm_object_part_text_set(passpopup, "title,text", title);
 
-	elm_object_style_set(passpopup, "transparent");
-
-	layout = elm_layout_add(passpopup);
-
-	ad->rotation = elm_win_rotation_get(ad->win_main);
-	BT_INFO("Start angle: %d", ad->rotation);
-
-	if (ad->rotation == BT_ROTATE_0 ||
-			ad->rotation == BT_ROTATE_180)
-		elm_layout_file_set(layout, CUSTOM_POPUP_PATH, "passwd_popup");
-	else
-		elm_layout_file_set(layout, CUSTOM_POPUP_PATH, "passwd_popup_landscape_ly");
-	evas_object_size_hint_weight_set(layout, EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
-
-	genlist = elm_genlist_add(layout);
+	genlist = elm_genlist_add(passpopup);
 	evas_object_size_hint_weight_set(genlist,
 			EVAS_HINT_EXPAND, EVAS_HINT_EXPAND);
 	evas_object_size_hint_align_set(genlist, EVAS_HINT_FILL, EVAS_HINT_FILL);
 	elm_genlist_mode_set(genlist, ELM_LIST_COMPRESS);
+	elm_scroller_content_min_limit(genlist, EINA_FALSE, EINA_TRUE);
 
 	/* Description */
 	ad->passwd_desc_itc = elm_genlist_item_class_new();
 	if (ad->passwd_desc_itc) {
-		ad->passwd_desc_itc->item_style = "multiline_main";
+		ad->passwd_desc_itc->item_style = "multiline";
 		ad->passwd_desc_itc->func.text_get = __bluetooth_popup_desc_label_get;
 		ad->passwd_desc_itc->func.content_get = NULL;
 		ad->passwd_desc_itc->func.state_get = NULL;
 		ad->passwd_desc_itc->func.del = NULL;
 
-		git = elm_genlist_item_append(genlist, ad->passwd_desc_itc, g_strdup(text), NULL,
+		g_free(ad->description);
+		ad->description = g_strdup(text);
+
+		git = elm_genlist_item_append(genlist, ad->passwd_desc_itc, ad, NULL,
 				ELM_GENLIST_ITEM_NONE, NULL, NULL);
 		elm_genlist_item_select_mode_set(git,
 						 ELM_OBJECT_SELECT_MODE_DISPLAY_ONLY);
@@ -1562,7 +1574,7 @@ static void __bluetooth_draw_input_view(struct bt_popup_appdata *ad,
 	/* Entry genlist item */
 	ad->passwd_entry_itc = elm_genlist_item_class_new();
 	if (ad->passwd_entry_itc) {
-		ad->passwd_entry_itc->item_style = "entry.icon";
+		ad->passwd_entry_itc->item_style = "full";
 		ad->passwd_entry_itc->func.text_get = NULL;
 		ad->passwd_entry_itc->func.content_get = __bluetooth_passwd_entry_icon_get;
 		ad->passwd_entry_itc->func.state_get = NULL;
@@ -1575,7 +1587,7 @@ static void __bluetooth_draw_input_view(struct bt_popup_appdata *ad,
 	/* Show password */
 	ad->passwd_show_passwd_itc = elm_genlist_item_class_new();
 	if (ad->passwd_show_passwd_itc) {
-		ad->passwd_show_passwd_itc->item_style = "1line";
+		ad->passwd_show_passwd_itc->item_style = "type1";
 		ad->passwd_show_passwd_itc->func.text_get = __bluetooth_passwd_show_passwd_label_get;
 		ad->passwd_show_passwd_itc->func.content_get = __bluetooth_passwd_show_passwd_icon_get;
 		ad->passwd_show_passwd_itc->func.state_get = NULL;
@@ -1623,11 +1635,9 @@ static void __bluetooth_draw_input_view(struct bt_popup_appdata *ad,
 	elm_genlist_realization_mode_set(genlist, EINA_TRUE);
 #endif
 	evas_object_show(genlist);
-	elm_object_part_content_set(layout, "elm.swallow.layout", genlist);
-
-	elm_object_content_set(passpopup, layout);
+	elm_object_content_set(passpopup, genlist);
 	evas_object_show(passpopup);
-	evas_object_show(layout);
+	evas_object_show(ad->win_main);
 
 	FN_END;
 }
@@ -1671,13 +1681,16 @@ static void __bluetooth_draw_access_request_popup(struct bt_popup_appdata *ad,
 	/* Description text*/
 	ad->desc_itc = elm_genlist_item_class_new();
 	if (ad->desc_itc) {
-		ad->desc_itc->item_style = "multiline_main";
+		ad->desc_itc->item_style = "multiline";
 		ad->desc_itc->func.text_get = __bluetooth_popup_desc_label_get;
 		ad->desc_itc->func.content_get = NULL;
 		ad->desc_itc->func.state_get = NULL;
 		ad->desc_itc->func.del = NULL;
 
-		git = elm_genlist_item_append(genlist, ad->desc_itc, g_strdup(text), NULL,
+		g_free(ad->description);
+		ad->description = g_strdup(text);
+
+		git = elm_genlist_item_append(genlist, ad->desc_itc, ad, NULL,
 				ELM_GENLIST_ITEM_NONE, NULL, NULL);
 		elm_genlist_item_select_mode_set(git,
 				ELM_OBJECT_SELECT_MODE_DISPLAY_ONLY);

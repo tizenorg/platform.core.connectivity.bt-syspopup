@@ -12,12 +12,12 @@ License:    Flora-1.1
 Source0:    %{name}-%{version}.tar.gz
 BuildRequires:  pkgconfig(evas)
 %if "%{?profile}" == "wearable"
-BuildRequires:  pkgconfig(efl-extension)
 BuildRequires:  pkgconfig(syspopup-caller)
 %else
 BuildRequires:  pkgconfig(efl-assist)
 BuildRequires:  pkgconfig(notification)
 %endif
+BuildRequires: pkgconfig(efl-extension)
 BuildRequires:  pkgconfig(ecore-input)
 BuildRequires:  pkgconfig(ethumb)
 BuildRequires:  pkgconfig(elementary)
