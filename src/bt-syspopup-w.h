@@ -41,7 +41,7 @@
 #define POPUP_IMAGE_PATH BT_PREFIX"/res/images"
 
 #define BT_COMMON_PKG		"bluetooth"
-#define BT_LOCALEDIR		"/usr/apps/org.tizen.bluetooth/res/locale"
+#define BT_LOCALEDIR		"/usr/apps/org.tizen.bluetooth/shared/locale"
 
 #define _EDJ(obj) elm_layout_edje_get(obj)
 
