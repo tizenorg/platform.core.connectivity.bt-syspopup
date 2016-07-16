@@ -1917,6 +1917,19 @@ void __bluetooth_set_color_table(void *data)
 	FN_END;
 }
 
+static void __bluetooth_back_key_cb(void *data, Evas_Object *obj, void *event_info)
+{
+	FN_START;
+
+	struct bt_popup_appdata *ad = data;
+
+	__bluetooth_remove_all_event(ad);
+	__bluetooth_win_del(ad);
+
+	FN_END;
+}
+
+
 static bool __bluetooth_create(void *data)
 {
 	struct bt_popup_appdata *ad = data;
@@ -1980,6 +1993,8 @@ static void __bluetooth_terminate(void *data)
 		ad->font_table = NULL;
 	}
 #endif
+
+	eext_object_event_callback_del(ad->win_main, EEXT_CALLBACK_BACK, __bluetooth_back_key_cb);
 
 	if (ad->popup)
 		evas_object_del(ad->popup);
@@ -2091,6 +2106,8 @@ DONE:
 		} else if (ad->event_type == BT_EVENT_PASSKEY_AUTO_ACCEPTED)
 			__lock_display();
 	}
+
+	eext_object_event_callback_add(ad->win_main, EEXT_CALLBACK_BACK, __bluetooth_back_key_cb, ad);
 
 	return;
 }

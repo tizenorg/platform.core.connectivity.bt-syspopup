@@ -5,7 +5,7 @@
 
 Name:       org.tizen.bt-syspopup
 Summary:    bluetooth system-popup application (bluetooth system popup)
-Version:    0.3.1
+Version:    0.3.2
 Release:    0
 Group:      main
 License:    Flora-1.1
@@ -91,6 +91,7 @@ rm -rf %{buildroot}
 %{TZ_SYS_RO_APP}/org.tizen.bt-syspopup/res/edje/*.edj
 %{TZ_SYS_SHARE}/icons/default/small/org.tizen.bt-syspopup.png
 %if "%{?profile}" == "wearable"
-/usr/apps/org.tizen.bt-syspopup/shared/res/tables/org.tizen.bt-syspopup_ChangeableColorTable.xml
-/usr/apps/org.tizen.bt-syspopup/shared/res/tables/org.tizen.bt-syspopup_FontInfoTable.xml
+%{TZ_SYS_RO_APP}/org.tizen.bt-syspopup/shared/res/tables/org.tizen.bt-syspopup_ChangeableColorTable.xml
+%{TZ_SYS_RO_APP}/org.tizen.bt-syspopup/shared/res/tables/org.tizen.bt-syspopup_FontInfoTable.xml
+%{TZ_SYS_RO_APP}/org.tizen.bt-syspopup/res/images/*
 %endif
