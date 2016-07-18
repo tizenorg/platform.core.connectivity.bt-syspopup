@@ -640,6 +640,18 @@ static void __bluetooth_authorization_request_cb(void *data,
 	__bluetooth_win_del(ad);
 }
 
+static void __bluetooth_back_key_cb(void *data, Evas_Object *obj, void *event_info)
+{
+	FN_START;
+
+	struct bt_popup_appdata *ad = data;
+
+	__bluetooth_remove_all_event(ad);
+	__bluetooth_win_del(ad);
+
+	FN_END;
+}
+
 static void __bluetooth_ime_hide(void)
 {
 	Ecore_IMF_Context *imf_context = NULL;
@@ -956,6 +968,8 @@ static void __bluetooth_draw_text_popup(struct bt_popup_appdata *ad,
 	elm_object_part_content_set(btn, "elm.swallow.content", icon);
 	elm_access_info_set(btn, ELM_ACCESS_INFO, BT_STR_OK);
 	evas_object_show(icon);
+
+	eext_object_event_callback_add(ad->popup, EEXT_CALLBACK_BACK, __bluetooth_back_key_cb, ad);
 
 	evas_object_show(ad->popup);
 	evas_object_show(ad->win_main);
@@ -1917,19 +1931,6 @@ void __bluetooth_set_color_table(void *data)
 	FN_END;
 }
 
-static void __bluetooth_back_key_cb(void *data, Evas_Object *obj, void *event_info)
-{
-	FN_START;
-
-	struct bt_popup_appdata *ad = data;
-
-	__bluetooth_remove_all_event(ad);
-	__bluetooth_win_del(ad);
-
-	FN_END;
-}
-
-
 static bool __bluetooth_create(void *data)
 {
 	struct bt_popup_appdata *ad = data;
@@ -1994,7 +1995,7 @@ static void __bluetooth_terminate(void *data)
 	}
 #endif
 
-	eext_object_event_callback_del(ad->win_main, EEXT_CALLBACK_BACK, __bluetooth_back_key_cb);
+	eext_object_event_callback_del(ad->popup, EEXT_CALLBACK_BACK, __bluetooth_back_key_cb);
 
 	if (ad->popup)
 		evas_object_del(ad->popup);
@@ -2106,8 +2107,6 @@ DONE:
 		} else if (ad->event_type == BT_EVENT_PASSKEY_AUTO_ACCEPTED)
 			__lock_display();
 	}
-
-	eext_object_event_callback_add(ad->win_main, EEXT_CALLBACK_BACK, __bluetooth_back_key_cb, ad);
 
 	return;
 }
