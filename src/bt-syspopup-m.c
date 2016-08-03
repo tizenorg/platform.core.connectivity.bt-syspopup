@@ -31,6 +31,7 @@
 #include <E_DBus.h>
 #include <aul.h>
 #include <bluetooth.h>
+#include <bluetooth_internal.h>
 #include <feedback.h>
 #include "bt-syspopup-m.h"
 #include <notification.h>
@@ -692,6 +693,79 @@ static void __bluetooth_passkey_confirm_cb(void *data,
 	evas_object_del(obj);
 
 	__bluetooth_win_del(ad);
+}
+
+static void __bluetooth_adapter_state_changed_cb(int result, bt_adapter_state_e state, void *user_data)
+{
+	BT_DBG("bluetooth state changed callback");
+	int ret;
+	struct bt_popup_appdata *ad = (struct bt_popup_appdata *)user_data;
+
+	if (state == BT_ADAPTER_ENABLED) {
+		BT_DBG("bt enabled");
+
+		if (ad->visibility_timeout) {
+			ret = bt_adapter_set_visibility(BT_ADAPTER_VISIBILITY_MODE_LIMITED_DISCOVERABLE, atoi(ad->visibility_timeout));
+			BT_DBG("set visibility, returns:%d", ret);
+		} else {
+			ret = bt_adapter_set_visibility(BT_ADAPTER_VISIBILITY_MODE_LIMITED_DISCOVERABLE, 120);
+			BT_DBG("set visibility, returns:%d", ret);
+		}
+
+		__bluetooth_win_del(ad);
+	} else
+		BT_DBG("bt disabled");
+}
+
+static void __bluetooth_visibility_confirm_cb(void *data,
+					 Evas_Object *obj, void *event_info)
+{
+	BT_DBG("visibility confirm cb called");
+
+	if (obj == NULL || data == NULL)
+		return;
+
+	int ret = BT_ERROR_NONE;
+	bt_adapter_state_e state = BT_ADAPTER_DISABLED;
+
+	struct bt_popup_appdata *ad = (struct bt_popup_appdata *)data;
+	const char *event = elm_object_text_get(obj);
+
+	if (!g_strcmp0(event, BT_STR_CONFIRM)) {
+		/* check state */
+		ret = bt_initialize();
+		if (ret) {
+			BT_DBG("bt initialize, returns:%d", ret);
+			return;
+		}
+
+		ret = bt_adapter_set_state_changed_cb(__bluetooth_adapter_state_changed_cb, ad);
+		if (ret) {
+			BT_DBG("bt enable, returns:%d", ret);
+			return;
+		}
+
+		ret = bt_adapter_get_state(&state);
+		if (ret) {
+			BT_DBG("bt get state, returns:%d", ret);
+			return;
+		}
+
+		if (state == BT_ADAPTER_DISABLED) {
+			ret = bt_adapter_enable();
+			BT_DBG("bt enable, returns:%d", ret);
+		} else {
+			if (ad->visibility_timeout) {
+				ret = bt_adapter_set_visibility(BT_ADAPTER_VISIBILITY_MODE_LIMITED_DISCOVERABLE, atoi(ad->visibility_timeout));
+				BT_DBG("set visibility, returns:%d", ret);
+			} else {
+				ret = bt_adapter_set_visibility(BT_ADAPTER_VISIBILITY_MODE_LIMITED_DISCOVERABLE, 120);
+				BT_DBG("set visibility, returns:%d", ret);
+			}
+			__bluetooth_win_del(ad);
+		}
+	} else
+		__bluetooth_win_del(ad);
 }
 
 static int __bluetooth_init_app_signal(struct bt_popup_appdata *ad)
@@ -1893,6 +1967,13 @@ static int __bluetooth_launch_handler(struct bt_popup_appdata *ad,
 		} else {
 			timeout = BT_ERROR_TIMEOUT;
 		}
+	} else if (!strcasecmp(event_type, "visibility-request")) {
+		BT_INFO("visibility request popup");
+
+		__bluetooth_draw_popup(ad, "Bluetooth permission request",
+					"Requesting permission to turn on Bluetooth and to set Visibility. Do you want to do this?", BT_STR_CANCEL, BT_STR_CONFIRM,
+					__bluetooth_visibility_confirm_cb);
+
 	} else if (!strcasecmp(event_type, "passkey-request")) {
 		char *device_name = NULL;
 
@@ -2457,6 +2538,8 @@ static void __bluetooth_reset(app_control_h app_control, void *data)
 	struct bt_popup_appdata *ad = data;
 	bundle *b = NULL;
 	char *event_type = NULL;
+	char *operation = NULL;
+	char *timeout = NULL;
 	int ret = 0;
 
 	BT_DBG("__bluetooth_reset()");
@@ -2465,18 +2548,33 @@ static void __bluetooth_reset(app_control_h app_control, void *data)
 		BT_ERR("App data is NULL");
 		return;
 	}
+
 	ret = app_control_export_as_bundle(app_control, &b);
 	if (ret != 0) {
 		BT_ERR("Failed to Convert the service handle to bundle data");
 		free(b);
 		return;
 	}
+
+	ret = app_control_get_extra_data(app_control, "timeout", &timeout);
+	if (ret < 0)
+		BT_ERR("Get data error");
+	else {
+		BT_INFO("Get visibility timeout : %s", timeout);
+		if (timeout)
+			ad->visibility_timeout = timeout;
+	}
+
 	/* Start Main UI */
 	ret = bundle_get_str(b, "event-type", &event_type);
 	if (ret != BUNDLE_ERROR_NONE)
 		BT_ERR("bundle_get_str() is failed : %d\n", ret);
 
+	/* Get app control operation */
+	if (app_control_get_operation(app_control, &operation) < 0)
+		BT_ERR("Get operation error");
 
+	BT_INFO("operation: %s", operation);
 	BT_DBG("event-type: %s", event_type);
 
 	if (event_type != NULL) {
@@ -2508,8 +2606,31 @@ static void __bluetooth_reset(app_control_h app_control, void *data)
 			if (ret != 0)
 				BT_ERR("Fail to change LCD");
 		}
-	} else {
-		BT_ERR("event type is NULL ");
+	} else if (g_strcmp0(operation, APP_CONTROL_OPERATION_SETTING_BT_VISIBILITY) == 0) {
+		BT_INFO("visibility operation");
+
+		bundle_add_str(b, "_INTERNAL_SYSPOPUP_NAME_", "bt-syspopup");
+
+		if (syspopup_has_popup(b))
+			__bluetooth_cleanup(ad); /* Destroy the existing popup*/
+
+		if (syspopup_create(b, &handler, ad->win_main, ad) == -1) {
+			BT_ERR("Both syspopup_create and syspopup_reset failed");
+			__bluetooth_remove_all_event(ad);
+		} else {
+			ret = __bluetooth_launch_handler(ad, b, "visibility-request");
+
+			if (ret != 0)
+				__bluetooth_remove_all_event(ad);
+
+			__bluetooth_notify_event(ad);
+
+			/* Change LCD brightness */
+			ret = device_display_change_state(DISPLAY_STATE_NORMAL);
+			if (ret != 0)
+				BT_ERR("Fail to change LCD");
+		}
+
 	}
 release:
 	bundle_free(b);
